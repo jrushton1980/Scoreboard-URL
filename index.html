@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
+.scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
+.team-card { 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  width:220px; 
+  height:80px; 
+  background: rgba(0,0,0,0.35); /* lighter transparency */
+  border-radius:15px; 
+  padding:10px 15px; 
+  z-index:1; 
+}
+.team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
+.team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
+.team-name, .shots { color:#111; }
+.team-name { font-size:20px; font-weight:bold; }
+.shots { font-size:14px; }
+.central-score { 
+  position:absolute; 
+  font-size:60px; 
+  font-weight:bold; 
+  background:rgba(0,0,0,0.5); /* slightly transparent */
+  padding:15px 25px; 
+  border-radius:20px; 
+  box-shadow:0 0 20px rgba(0,0,0,0.5); 
+  z-index:2; 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
+}
+.score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
+.vs { font-size:36px; margin:0 10px; color:#fff; }
+.period-inside { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; }
+#teamAcard { margin-right:100px; }
+#teamBcard { margin-left:100px; }
+</style>
+</head>
+<body>
+<div class="scoreboard-wrapper">
+  <div class="team-card" id="teamAcard">
+    <img class="team-logo" id="teamALogo">
+    <div class="team-info">
+      <div class="team-name" id="teamAName"></div>
+      <div class="shots" id="teamAShots"></div>
+    </div>
+  </div>
+
+  <div class="central-score">
+    <div class="score-row">
+      <span id="scoreA">0</span>
+      <span class="vs">-</span>
+      <span id="scoreB">0</span>
+    </div>
+    <div class="period-inside" id="period"></div>
+  </div>
+
+  <div class="team-card" id="teamBcard">
+    <img class="team-logo" id="teamBLogo">
+    <div class="team-info">
+      <div class="team-name" id="teamBName"></div>
+      <div class="shots" id="teamBShots"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA_URL = "https://script.google.com/macros/s/.../exec";
+
+async function refresh() {
+  try {
+    const res = await fetch(DATA_URL);
+    const data = await res.json();
+    
+    document.getElementById("teamALogo").src = data.teamALogo;
+    document.getElementById("teamAName").innerText = data.teamAName;
+    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
+    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
+
+    document.getElementById("teamBLogo").src = data.teamBLogo;
+    document.getElementById("teamBName").innerText = data.teamBName;
+    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
+    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
+
+    document.getElementById("scoreA").innerText = data.teamAScore;
+    document.getElementById("scoreB").innerText = data.teamBScore;
+    document.getElementById("period").innerText = "Period " + data.period;
+  } catch (err) {
+    console.error("Failed to fetch scoreboard data:", err);
+  }
+}
+
+// Refresh every second
+setInterval(refresh, 1000);
+refresh();
+</script>
+</body>
+</html>
