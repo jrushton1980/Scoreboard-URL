@@ -5,27 +5,30 @@
 <style>
 body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
 .scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
+
 .team-card { 
   display:flex; 
   align-items:center; 
   justify-content:space-between; 
   width:220px; 
   height:80px; 
-  background: rgba(0,0,0,0.35); /* lighter transparency */
+  background: rgba(0,0,0,0.35); /* semi-transparent */
   border-radius:15px; 
   padding:10px 15px; 
   z-index:1; 
 }
+
 .team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
 .team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
 .team-name, .shots { color:#111; }
 .team-name { font-size:20px; font-weight:bold; }
 .shots { font-size:14px; }
+
 .central-score { 
   position:absolute; 
   font-size:60px; 
   font-weight:bold; 
-  background:rgba(0,0,0,0.5); /* slightly transparent */
+  background:rgba(0,0,0,0.5); /* semi-transparent */
   padding:15px 25px; 
   border-radius:20px; 
   box-shadow:0 0 20px rgba(0,0,0,0.5); 
@@ -35,9 +38,11 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
   align-items:center; 
   justify-content:center; 
 }
+
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
 .vs { font-size:36px; margin:0 10px; color:#fff; }
 .period-inside { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; }
+
 #teamAcard { margin-right:100px; }
 #teamBcard { margin-left:100px; }
 </style>
@@ -71,13 +76,13 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/.../exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbwUio-09ug0U5SudOJI6oHLVVhdzp_CpVuJeiAOlT47J80_Pg2ladkEmcfF91J8j0vt/exec"; // Replace with your JSON exec URL
 
 async function refresh() {
   try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
-    
+
     document.getElementById("teamALogo").src = data.teamALogo;
     document.getElementById("teamAName").innerText = data.teamAName;
     document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
@@ -90,7 +95,8 @@ async function refresh() {
 
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
-    document.getElementById("period").innerText = "Period " + data.period;
+    document.getElementById("period").innerText = "Period " + data.Period;
+
   } catch (err) {
     console.error("Failed to fetch scoreboard data:", err);
   }
