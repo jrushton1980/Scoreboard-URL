@@ -20,7 +20,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 
 .team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
 .team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
-.team-name, .shots { color:#111; }
+.team-name, .shots { color:#fff; }
 .team-name { font-size:20px; font-weight:bold; }
 .shots { font-size:16px; }
 
@@ -103,7 +103,7 @@ async function refresh() {
 }
 
 // Refresh every second
-setInterval(refresh, 1000);
+setInterval(refresh, 500);
 refresh();
 </script>
 </body>
