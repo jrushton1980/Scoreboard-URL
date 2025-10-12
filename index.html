@@ -12,7 +12,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
   justify-content:space-between; 
   width:260px; 
   height:55px; 
-  background: rgba(0,0,0,0.7); /* semi-transparent */
+  background: rgba(0,0,0,0.7);
   border-radius:15px; 
   padding:10px 15px; 
   z-index:1; 
@@ -28,7 +28,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
   position:absolute; 
   font-size:40px; 
   font-weight:bold; 
-  background:rgba(0,0,0,0.7); /* semi-transparent */
+  background:rgba(0,0,0,0.7); 
   padding:15px 25px; 
   border-radius:20px; 
   box-shadow:0 0 20px rgba(0,0,0,0.5); 
@@ -41,7 +41,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
 .vs { font-size:36px; margin:0 10px; color:#fff; }
-.period-inside { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; }
+.period-clock { font-size:16px; font-weight:normal; margin-top:5px; color:#fff; }
 
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
@@ -63,7 +63,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
       <span class="vs">-</span>
       <span id="scoreB">0</span>
     </div>
-    <div class="period-inside" id="period"></div>
+    <div class="period-clock" id="periodClock">20:00 | Period 1</div>
   </div>
 
   <div class="team-card" id="teamBcard">
@@ -77,6 +77,10 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 
 <script>
 const DATA_URL = "https://script.google.com/macros/s/AKfycbwUio-09ug0U5SudOJI6oHLVVhdzp_CpVuJeiAOlT47J80_Pg2ladkEmcfF91J8j0vt/exec"; // Replace with your JSON exec URL
+
+let timerSeconds = 20*60; // default period length in seconds
+let running = false;
+let period = 1;
 
 async function refresh() {
   try {
@@ -95,16 +99,37 @@ async function refresh() {
 
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
-    document.getElementById("period").innerText = "Period " + data.Period;
 
+    period = data.Period;
+    if(!running){
+      const [m,s] = (data.DefaultPeriodLength || "20:00").split(":").map(Number);
+      timerSeconds = m*60 + (s||0);
+    }
   } catch (err) {
     console.error("Failed to fetch scoreboard data:", err);
   }
 }
 
-// Refresh every second
-setInterval(refresh, 500);
+// Live clock update
+function updateClockDisplay() {
+  const min = Math.floor(timerSeconds/60);
+  const sec = timerSeconds % 60;
+  document.getElementById("periodClock").innerText = 
+    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Period ${period}`;
+}
+
+// Timer tick
+setInterval(()=>{
+  if(running && timerSeconds>0) timerSeconds--;
+  updateClockDisplay();
+}, 1000);
+
+// Refresh Google Sheet data every 2 seconds
+setInterval(refresh, 2000);
 refresh();
+
+// Example: toggle running state for testing
+document.body.addEventListener("click", ()=>running = !running);
 </script>
 </body>
 </html>
