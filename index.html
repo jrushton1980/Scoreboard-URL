@@ -26,12 +26,12 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 
 .central-score { 
   position:absolute; 
-  font-size:40px; 
+  font-size:32px; /* smaller than before */
   font-weight:bold; 
   background:rgba(0,0,0,0.7); 
-  padding:15px 25px; 
+  padding:10px 20px; /* smaller padding */
   border-radius:20px; 
-  box-shadow:0 0 20px rgba(0,0,0,0.5); 
+  box-shadow:0 0 15px rgba(0,0,0,0.5); 
   z-index:2; 
   display:flex; 
   flex-direction:column; 
@@ -40,8 +40,8 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 }
 
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
-.vs { font-size:36px; margin:0 10px; color:#fff; }
-.period-clock { font-size:16px; font-weight:normal; margin-top:5px; color:#fff; }
+.vs { font-size:28px; margin:0 10px; color:#fff; } /* smaller */
+.period-clock { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; } /* smaller */
 
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
@@ -63,7 +63,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
       <span class="vs">-</span>
       <span id="scoreB">0</span>
     </div>
-    <div class="period-clock" id="periodClock">20:00 | Period 1</div>
+    <div class="period-clock" id="periodClock">20:00 | Per 1</div>
   </div>
 
   <div class="team-card" id="teamBcard">
@@ -76,9 +76,9 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbwUio-09ug0U5SudOJI6oHLVVhdzp_CpVuJeiAOlT47J80_Pg2ladkEmcfF91J8j0vt/exec"; // Replace with your JSON exec URL
+const DATA_URL = "https://script.google.com/macros/s/AKfycbwUio-09ug0U5SudOJI6oHLVVhdzp_CpVuJeiAOlT47J80_Pg2ladkEmcfF91J8j0vt/exec";
 
-let timerSeconds = 20*60; // default period length in seconds
+let timerSeconds = 20*60; 
 let running = false;
 let period = 1;
 
@@ -110,25 +110,22 @@ async function refresh() {
   }
 }
 
-// Live clock update
 function updateClockDisplay() {
   const min = Math.floor(timerSeconds/60);
   const sec = timerSeconds % 60;
   document.getElementById("periodClock").innerText = 
-    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Period ${period}`;
+    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
 }
 
-// Timer tick
 setInterval(()=>{
   if(running && timerSeconds>0) timerSeconds--;
   updateClockDisplay();
 }, 1000);
 
-// Refresh Google Sheet data every 2 seconds
 setInterval(refresh, 2000);
 refresh();
 
-// Example: toggle running state for testing
+// Temporary click toggle for testing
 document.body.addEventListener("click", ()=>running = !running);
 </script>
 </body>
