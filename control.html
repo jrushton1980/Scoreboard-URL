@@ -5,198 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoreboard Control</title>
 <style>
-  body {
-    background-color: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+body {
+  background-color: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  /* Centered gear button */
-  .settings-btn {
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    margin-bottom: 12px;
-  }
+/* Centered gear button */
+.settings-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.settings-btn {
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:28px;
+  cursor:pointer;
+}
 
-  /* Top scoreboard */
-  .scoreboard {
-    width: 95%;
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .team-row {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 18px;
-  }
-  .score-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 36px;
-    margin-top: 6px;
-  }
-  .shots-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-    margin-top: 4px;
-    opacity: 0.85;
-  }
+/* Top scoreboard */
+.scoreboard {
+  width: 95%;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.team-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; }
+.score-row { display: flex; justify-content: space-between; font-size: 36px; margin-top:6px; }
+.shots-row { display: flex; justify-content: space-between; font-size:16px; margin-top:4px; opacity:0.85; }
 
-  /* Clock + Period */
-  .clock-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 95%;
-    background: #1d1d1d;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-  }
-  .clock-section button {
-    flex: 1;
-    font-size: 18px;
-    padding: 14px 0;
-    margin: 0 4px;
-    border-radius: 8px;
-    border: none;
-    background-color: #333;
-    color: #fff;
-    cursor: pointer;
-  }
-  #timer {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: center;
-  }
-  #period {
-    font-size: 18px;
-    text-align: center;
-    margin-top: 2px;
-  }
+/* Clock + Period */
+.clock-section { display:flex; justify-content:space-between; align-items:center; width:95%; background:#1d1d1d; border-radius:12px; padding:10px; margin-bottom:12px; }
+.clock-section button { flex:1; font-size:18px; padding:14px 0; margin:0 4px; border-radius:8px; border:none; background-color:#333; color:#fff; cursor:pointer; }
+#timer { font-size:28px; font-weight:bold; text-align:center; }
+#period { font-size:18px; text-align:center; margin-top:2px; }
 
-  /* Start/Stop */
-  #startStopBtn {
-    width: 95%;
-    font-size: 28px;
-    padding: 40px 0;
-    border-radius: 12px;
-    border: none;
-    color: white;
-    background-color: #28a745;
-    margin-bottom: 16px;
-  }
+/* Start/Stop */
+#startStopBtn { width:95%; font-size:28px; padding:40px 0; border-radius:12px; border:none; color:white; background-color:#28a745; margin-bottom:16px; }
 
-  /* Team controls */
-  .team-controls {
-    display: flex;
-    justify-content: space-between;
-    width: 95%;
-    gap: 10px;
-  }
-  .team-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .team-column button.plus {
-    width: 100%;
-    font-size: 24px;
-    padding: 40px 0;
-    border-radius: 10px;
-    border: none;
-    background-color: #555;
-    color: #fff;
-  }
-  .team-column button.minus {
-    width: 100%;
-    font-size: 24px;
-    padding: 12px 0;
-    border-radius: 10px;
-    border: none;
-    background-color: #777;
-    color: #fff;
-  }
+/* Team controls */
+.team-controls { display:flex; justify-content:space-between; width:95%; gap:10px; }
+.team-column { flex:1; display:flex; flex-direction:column; gap:6px; }
+.team-column button.plus { width:100%; font-size:24px; padding:40px 0; border-radius:10px; border:none; background-color:#555; color:#fff; }
+.team-column button.minus { width:100%; font-size:24px; padding:12px 0; border-radius:10px; border:none; background-color:#777; color:#fff; }
 
-  /* Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 10;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-  }
-  .modal-content {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    color: #fff;
-  }
-  .modal-content label {
-    font-size: 16px;
-    margin-bottom: 4px;
-  }
-  .modal-content select, .modal-content input {
-    font-size: 16px;
-    padding: 8px;
-    border-radius: 8px;
-    border: none;
-    width: 100%;
-  }
-  .modal-content button {
-    font-size: 18px;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-  }
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
-  .modal-buttons button.cancel {
-    background-color: #555;
-    color: #fff;
-    flex: 1;
-    margin-right: 6px;
-  }
-  .modal-buttons button.update {
-    background-color: #28a745;
-    color: #fff;
-    flex: 1;
-  }
+/* Modal for team selection */
+.modal-overlay {
+  display:none;
+  position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10; justify-content:center; align-items:center;
+}
+.modal {
+  background:#1e1e1e; padding:20px; border-radius:12px; width:90%; max-width:400px;
+}
+.modal h3 { text-align:center; margin-top:0; }
+.modal label { display:block; margin-top:10px; }
+.modal select, .modal input { width:100%; padding:6px; margin-top:4px; border-radius:6px; border:none; font-size:16px; }
+.modal button { margin-top:12px; padding:10px; width:48%; font-size:16px; border:none; border-radius:8px; cursor:pointer; }
+.modal .btn-update { background:#28a745; color:#fff; margin-right:4%; }
+.modal .btn-cancel { background:#dc3545; color:#fff; }
 </style>
 </head>
 <body>
 
-<!-- Centered Gear Button -->
-<button class="settings-btn" onclick="openSettings()">⚙️</button>
+<div class="settings-container">
+  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+</div>
 
 <!-- Top scoreboard -->
 <div class="scoreboard">
@@ -230,14 +113,12 @@
 
 <!-- Team Controls -->
 <div class="team-controls">
-  <!-- Team A -->
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
   </div>
-  <!-- Team B -->
   <div class="team-column">
     <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
@@ -246,148 +127,166 @@
   </div>
 </div>
 
-<!-- Team Selection Modal -->
-<div id="teamModal" class="modal">
-  <div class="modal-content">
-    <label for="teamSelect">Select Team:</label>
-    <select id="teamSelect"></select>
-    <input type="text" id="customTeam" placeholder="-- Custom --" style="display:none;">
-    <div class="modal-buttons">
-      <button class="cancel" onclick="closeModal()">Cancel</button>
-      <button class="update" onclick="updateTeam()">Update</button>
+<!-- Modal for Team Selection -->
+<div class="modal-overlay" id="teamModal">
+  <div class="modal">
+    <h3>Select Teams</h3>
+    <label>Team A:
+      <select id="teamASelect" onchange="checkCustom('A')"></select>
+      <input type="text" id="teamACustom" placeholder="Custom Team Name" style="display:none;">
+    </label>
+    <label>Team B:
+      <select id="teamBSelect" onchange="checkCustom('B')"></select>
+      <input type="text" id="teamBCustom" placeholder="Custom Team Name" style="display:none;">
+    </label>
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn-update" onclick="updateTeams()">Update</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbytIuXy17Y27QTgQdXsFVUeAKKGQJr8q588j3cVWU5qPZ6RzrobufWA-LZx2gJgzz--/exec"; // replace with your /exec URL
+const DATA_URL = "https://script.google.com/macros/s/AKfycbytIuXy17Y27QTgQdXsFVUeAKKGQJr8q588j3cVWU5qPZ6RzrobufWA-LZx2gJgzz--/exec";
 
 let timerInterval;
 let isRunning = false;
 let timeRemaining = 20*60;
 let period = 1;
-let currentTeamSide = null; // "A" or "B"
+
+// Fetch initial data from Google Sheet
+async function fetchData(){
+  try{
+    const res = await fetch(DATA_URL);
+    const data = await res.json();
+
+    document.getElementById('teamAName').textContent = data.teamAName || '';
+    document.getElementById('teamBName').textContent = data.teamBName || '';
+    document.getElementById('teamAScore').textContent = data.teamAScore || 0;
+    document.getElementById('teamBScore').textContent = data.teamBScore || 0;
+    document.getElementById('teamAShots').textContent = `Shots: ${data.teamAShots || 0}`;
+    document.getElementById('teamBShots').textContent = `Shots: ${data.teamBShots || 0}`;
+    period = data.Period || 1;
+    timeRemaining = parseInt(data.TimerSeconds) || 20*60;
+    isRunning = data.Running === true || data.Running === "TRUE";
+
+    updateTimerDisplay();
+    updateStartStopButton();
+
+    populateTeamSelects(data.teamlist || []);
+  } catch(err){ console.error(err); }
+}
+
+// Push updates to Google Sheet
+async function pushUpdate(payload){
+  try{
+    await fetch(DATA_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    await fetchData(); // refresh after update
+  } catch(err){ console.error(err); }
+}
 
 // Timer functions
 function formatTime(sec){
-  const m = Math.floor(sec/60);
-  const s = sec % 60;
+  const m=Math.floor(sec/60);
+  const s=sec%60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
-
 function updateTimerDisplay(){
   document.getElementById('timer').textContent = formatTime(timeRemaining);
   document.getElementById('period').textContent = `Period ${period}`;
 }
+function updateStartStopButton(){
+  const btn = document.getElementById('startStopBtn');
+  btn.textContent = isRunning ? 'Stop' : 'Start';
+  btn.style.backgroundColor = isRunning ? '#dc3545' : '#28a745';
+}
 
+// Start/Stop toggle
 function toggleClock(){
   const btn = document.getElementById('startStopBtn');
+  isRunning = !isRunning;
+  btn.textContent = isRunning ? 'Stop' : 'Start';
+  btn.style.backgroundColor = isRunning ? '#dc3545' : '#28a745';
+  pushUpdate({Running: isRunning});
   if(isRunning){
-    clearInterval(timerInterval);
-    isRunning=false;
-    btn.textContent='Start';
-    btn.style.backgroundColor='#28a745';
-  } else {
-    isRunning=true;
-    btn.textContent='Stop';
-    btn.style.backgroundColor='#dc3545';
     timerInterval = setInterval(()=>{
       if(timeRemaining>0){
         timeRemaining--;
         updateTimerDisplay();
-      } else {
-        clearInterval(timerInterval);
-        isRunning=false;
-        btn.textContent='Start';
-        btn.style.backgroundColor='#28a745';
-      }
+        pushUpdate({TimerSeconds: timeRemaining});
+      } else { clearInterval(timerInterval); isRunning=false; updateStartStopButton(); }
     },1000);
-  }
+  } else clearInterval(timerInterval);
 }
 
+// Score and Shots updates
+function updateScore(team, change){
+  const el=document.getElementById(`team${team}Score`);
+  const newVal=Math.max(0,parseInt(el.textContent)+change);
+  el.textContent = newVal;
+  pushUpdate({[`team${team}Score`]: newVal});
+}
+function updateShots(team, change){
+  const el=document.getElementById(`team${team}Shots`);
+  const current=parseInt(el.textContent.replace('Shots: ','')||0);
+  const newVal=Math.max(0,current+change);
+  el.textContent = `Shots: ${newVal}`;
+  pushUpdate({[`team${team}Shots`]: newVal});
+}
+
+// Manual period / clock set
 function setPeriod(){
-  const input=prompt("Enter Period number:");
-  const val=parseInt(input);
+  const val=parseInt(prompt("Enter Period number:"));
   if(!isNaN(val) && val>0){
     period=val;
     updateTimerDisplay();
+    pushUpdate({Period: period});
   }
 }
-
 function setClock(){
   const input=prompt("Enter time (MM:SS):");
   if(input && /^\d{1,2}:\d{2}$/.test(input)){
-    const [m,s] = input.split(':').map(Number);
-    timeRemaining = m*60 + s;
+    const [m,s]=input.split(':').map(Number);
+    timeRemaining=m*60+s;
     updateTimerDisplay();
+    pushUpdate({TimerSeconds: timeRemaining});
   }
 }
 
-function updateScore(team, change){
-  const el=document.getElementById(`team${team}Score`);
-  el.textContent = Math.max(0,parseInt(el.textContent)+change);
+// Modal / team selection
+function openSettings(){ document.getElementById('teamModal').style.display='flex'; }
+function closeModal(){ document.getElementById('teamModal').style.display='none'; }
+function populateTeamSelects(list){
+  const aSelect=document.getElementById('teamASelect');
+  const bSelect=document.getElementById('teamBSelect');
+  [aSelect,bSelect].forEach(s=>{ s.innerHTML=''; });
+  list.forEach(team=>{
+    const optA=document.createElement('option'); optA.value=team; optA.textContent=team; aSelect.appendChild(optA);
+    const optB=document.createElement('option'); optB.value=team; optB.textContent=team; bSelect.appendChild(optB);
+  });
+  const customA=document.createElement('option'); customA.value='-- Custom --'; customA.textContent='-- Custom --'; aSelect.appendChild(customA);
+  const customB=document.createElement('option'); customB.value='-- Custom --'; customB.textContent='-- Custom --'; bSelect.appendChild(customB);
+}
+function checkCustom(team){
+  const sel=document.getElementById(`team${team}Select`);
+  const inp=document.getElementById(`team${team}Custom`);
+  inp.style.display = sel.value==='-- Custom --' ? 'block' : 'none';
+}
+function updateTeams(){
+  let nameA = document.getElementById('teamASelect').value;
+  let nameB = document.getElementById('teamBSelect').value;
+  if(nameA==='-- Custom --') nameA=document.getElementById('teamACustom').value || '';
+  if(nameB==='-- Custom --') nameB=document.getElementById('teamBCustom').value || '';
+  pushUpdate({teamAName:nameA, teamBName:nameB});
+  closeModal();
 }
 
-function updateShots(team, change){
-  const el=document.getElementById(`team${team}Shots`);
-  const current = parseInt(el.textContent.replace('Shots: ','')||0);
-  el.textContent = `Shots: ${Math.max(0,current+change)}`;
-}
-
-// Modal functions
-async function openSettings(){
-  currentTeamSide = prompt("Which team to change? (A/B)");
-  if(currentTeamSide !== "A" && currentTeamSide !== "B") return;
-
-  // Fetch team list from Google Sheet
-  try{
-    const res = await fetch(DATA_URL);
-    const data = await res.json();
-    const teamlist = data.teamlist || [];
-    const select = document.getElementById('teamSelect');
-    select.innerHTML = '';
-    teamlist.forEach(team=>{
-      const opt = document.createElement('option');
-      opt.value = team;
-      opt.textContent = team;
-      select.appendChild(opt);
-    });
-    select.innerHTML += `<option value="--Custom--">-- Custom --</option>`;
-    document.getElementById('customTeam').style.display='none';
-    select.onchange = ()=>{
-      if(select.value === "--Custom--") document.getElementById('customTeam').style.display='block';
-      else document.getElementById('customTeam').style.display='none';
-    }
-    document.getElementById('teamModal').style.display='flex';
-  }catch(err){ console.error(err); }
-}
-
-function closeModal(){
-  document.getElementById('teamModal').style.display='none';
-}
-
-async function updateTeam(){
-  const select = document.getElementById('teamSelect');
-  let value = select.value;
-  if(value === "--Custom--"){
-    value = document.getElementById('customTeam').value.trim();
-    if(!value) return alert("Please enter a custom team name.");
-  }
-  // Push to Google Sheet
-  try{
-    const payload = {};
-    payload[`team${currentTeamSide}Name`] = value;
-    await fetch(DATA_URL,{
-      method:'POST',
-      body: JSON.stringify(payload),
-      headers: {'Content-Type':'application/json'}
-    });
-    closeModal();
-  }catch(err){ console.error(err); }
-}
-
-// Initialize timer display
-updateTimerDisplay();
+// Initialize
+fetchData();
 </script>
 </body>
 </html>
