@@ -1,158 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Scoreboard Display</title>
 <style>
-  body {
-    margin: 0;
-    background-color: black;
-    color: white;
-    font-family: "Roboto", sans-serif;
-    overflow: hidden;
-  }
+:root {
+  --font-team-name: 'Arial', sans-serif;
+  --font-team-name-size: 22px;
+  --font-shots: 'Arial', sans-serif;
+  --font-shots-size: 16px;
+  --font-score: 'Arial', sans-serif;
+  --font-score-size: 40px;
+  --font-vs-size: 32px;
+  --font-period: 'Arial', sans-serif;
+  --font-period-size: 16px;
+}
 
-  #scoreboard {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 150px;
-    padding: 0 60px;
-  }
+body { 
+  margin:0; padding:0; 
+  font-family: var(--font-team-name); 
+  background: transparent; 
+  display:flex; flex-direction: column; align-items:center; 
+}
 
-  .team {
-    text-align: center;
-    width: 35%;
-  }
+.scoreboard-wrapper { 
+  position: relative; 
+  display:flex; 
+  justify-content:center; 
+  align-items:center; 
+  margin-top:40px; 
+}
 
-  .team-logo {
-    height: 70px;
-    width: auto;
-    display: block;
-    margin: 0 auto 5px;
-  }
+.team-card { 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  width:260px; 
+  height:55px; 
+  background: rgba(0,0,0,0.7);
+  border-radius:15px; 
+  padding:10px 15px; 
+  z-index:1; 
+}
 
-  .team-name {
-    font-size: 26px;
-    font-weight: 600;
-    margin-top: 2px;
-  }
+.team-info { 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:center; 
+  flex-grow:1; 
+  margin-left:10px; 
+}
 
-  .score {
-    font-size: 72px;
-    font-weight: 700;
-    margin: 5px 0;
-  }
+.team-logo { 
+  width:60px; 
+  height:60px; 
+  border-radius:50%; 
+  object-fit:cover; 
+  border:2px solid #fff; 
+}
 
-  .shots {
-    font-size: 18px;
-    opacity: 0.8;
-  }
+.team-name { 
+  font-family: var(--font-team-name); 
+  font-size: var(--font-team-name-size); 
+  font-weight:bold; 
+  color:#fff; 
+}
 
-  #center {
-    width: 30%;
-    text-align: center;
-  }
+.shots { 
+  font-family: var(--font-shots); 
+  font-size: var(--font-shots-size); 
+  color:#fff; 
+}
 
-  #clock {
-    font-size: 60px;
-    font-weight: bold;
-    color: white;
-  }
+.central-score { 
+  position:absolute; 
+  font-family: var(--font-score); 
+  font-weight:bold; 
+  font-size: var(--font-score-size); 
+  background:rgba(0,0,0,0.7); 
+  padding:15px 15px; 
+  border-radius:20px; 
+  box-shadow:0 0 20px rgba(0,0,0,0.5); 
+  z-index:2; 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
+}
 
-  #period {
-    display: none; /* hidden, included in clock text below */
-  }
+.score-row { 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  color:#fff; 
+}
+
+.vs { 
+  font-size: var(--font-vs-size); 
+  margin:0 10px; 
+  color:#fff; 
+}
+
+.period-clock { 
+  font-family: var(--font-period); 
+  font-size: var(--font-period-size); 
+  font-weight:normal; 
+  margin-top:5px; 
+  color:#fff; 
+}
+
+#teamAcard { margin-right:70px; }
+#teamBcard { margin-left:70px; }
 </style>
 </head>
 <body>
-  <div id="scoreboard">
-    <div id="teamA" class="team">
-      <img id="teamALogo" class="team-logo" src="">
-      <div id="teamAName" class="team-name">Team A</div>
-      <div id="teamAScore" class="score">0</div>
-      <div id="teamAShots" class="shots">Shots: 0</div>
-    </div>
-
-    <div id="center">
-      <div id="clock">00:00 | Per 1</div>
-    </div>
-
-    <div id="teamB" class="team">
-      <img id="teamBLogo" class="team-logo" src="">
-      <div id="teamBName" class="team-name">Team B</div>
-      <div id="teamBScore" class="score">0</div>
-      <div id="teamBShots" class="shots">Shots: 0</div>
+<div class="scoreboard-wrapper">
+  <div class="team-card" id="teamAcard">
+    <img class="team-logo" id="teamALogo">
+    <div class="team-info">
+      <div class="team-name" id="teamAName"></div>
+      <div class="shots" id="teamAShots"></div>
     </div>
   </div>
 
+  <div class="central-score">
+    <div class="score-row">
+      <span id="scoreA">0</span>
+      <span class="vs">-</span>
+      <span id="scoreB">0</span>
+    </div>
+    <div class="period-clock" id="periodClock">20:00 | Per 1</div>
+  </div>
+
+  <div class="team-card" id="teamBcard">
+    <img class="team-logo" id="teamBLogo">
+    <div class="team-info">
+      <div class="team-name" id="teamBName"></div>
+      <div class="shots" id="teamBShots"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbz1cCq3KGCdHG1km939b9IV4LRZkJeW5ldzG4RwH23o5KtvqoVSZrm_dqDsufE4a1jp/exec"; // <-- replace with your deployed Apps Script /exec URL
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec"; // <-- Replace this
 
-let lastState = {};
-let lastTimerSeconds = null;
-let localStartTime = null;
+let timerSeconds = 20 * 60;
+let running = false;
+let period = 1;
 
-// format seconds as MM:SS
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-}
-
-// update scoreboard display
-function updateDisplay(state) {
-  document.getElementById("teamAName").textContent = state.teamAName || "";
-  document.getElementById("teamBName").textContent = state.teamBName || "";
-  document.getElementById("teamAScore").textContent = state.teamAScore || "0";
-  document.getElementById("teamBScore").textContent = state.teamBScore || "0";
-  document.getElementById("teamAShots").textContent = "Shots: " + (state.teamAShots || "0");
-  document.getElementById("teamBShots").textContent = "Shots: " + (state.teamBShots || "0");
-
-  document.getElementById("teamALogo").src = state.teamALogo || "";
-  document.getElementById("teamBLogo").src = state.teamBLogo || "";
-
-  document.getElementById("teamAName").style.color = state.teamAColor || "#fff";
-  document.getElementById("teamBName").style.color = state.teamBColor || "#fff";
-
-  let seconds = parseInt(state.TimerSeconds) || 0;
-  const running = String(state.Running).toUpperCase() === "TRUE";
-  const period = state.Period || "1";
-
-  if (running) {
-    if (lastTimerSeconds !== seconds) {
-      lastTimerSeconds = seconds;
-      localStartTime = Date.now();
-    } else if (localStartTime) {
-      const elapsed = Math.floor((Date.now() - localStartTime) / 1000);
-      seconds = Math.max(0, lastTimerSeconds - elapsed);
-    }
-  } else {
-    lastTimerSeconds = seconds;
-    localStartTime = null;
-  }
-
-  document.getElementById("clock").textContent = `${formatTime(seconds)} | Per ${period}`;
-}
-
-// fetch data from Google Sheets
-async function fetchData() {
+async function refresh() {
   try {
     const res = await fetch(DATA_URL);
-    const state = await res.json();
-    lastState = state;
-    updateDisplay(state);
+    const data = await res.json();
+
+    // Team A
+    document.getElementById("teamALogo").src = data.teamALogo || "";
+    document.getElementById("teamAName").innerText = data.teamAName || "";
+    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots || 0}`;
+    document.getElementById("teamAcard").style.backgroundColor = (data.teamAColor || "#000") + "33";
+
+    // Team B
+    document.getElementById("teamBLogo").src = data.teamBLogo || "";
+    document.getElementById("teamBName").innerText = data.teamBName || "";
+    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots || 0}`;
+    document.getElementById("teamBcard").style.backgroundColor = (data.teamBColor || "#000") + "33";
+
+    // Scores
+    document.getElementById("scoreA").innerText = data.teamAScore ?? 0;
+    document.getElementById("scoreB").innerText = data.teamBScore ?? 0;
+
+    // Period & Timer
+    period = data.Period ?? 1;
+    running = data.Running === true || data.Running === "TRUE";
+    timerSeconds = parseInt(data.TimerSeconds) || 0;
+
   } catch (err) {
-    console.error("Error fetching data", err);
+    console.error("Failed to fetch scoreboard data:", err);
   }
 }
 
-// periodic refresh for smoothness
-setInterval(fetchData, 2000);
+function updateClockDisplay() {
+  const min = Math.floor(timerSeconds / 60);
+  const sec = timerSeconds % 60;
+  document.getElementById("periodClock").innerText =
+    `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} | Per ${period}`;
+}
+
 setInterval(() => {
-  if (lastState) updateDisplay(lastState);
-}, 100);
-fetchData();
+  if (running && timerSeconds > 0) timerSeconds--;
+  updateClockDisplay();
+}, 1000);
+
+setInterval(refresh, 1000);
+refresh();
 </script>
 </body>
 </html>
