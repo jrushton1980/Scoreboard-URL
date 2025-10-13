@@ -6,107 +6,27 @@
 :root {
   --font-team-name: 'Arial', sans-serif;
   --font-team-name-size: 22px;
-  --font-shots: 'Arial', sans-serif;
   --font-shots-size: 16px;
-  --font-score: 'Arial', sans-serif;
   --font-score-size: 40px;
   --font-vs-size: 32px;
-  --font-period: 'Arial', sans-serif;
   --font-period-size: 16px;
 }
 
-body { 
-  margin:0; padding:0; 
-  font-family: var(--font-team-name); 
-  background: transparent; 
-  display:flex; flex-direction: column; align-items:center; 
-}
+body { margin:0; padding:0; font-family: var(--font-team-name); background: transparent; display:flex; flex-direction: column; align-items:center; }
 
-.scoreboard-wrapper { 
-  position: relative; 
-  display:flex; 
-  justify-content:center; 
-  align-items:center; 
-  margin-top:40px; 
-}
+.scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
 
-.team-card { 
-  display:flex; 
-  align-items:center; 
-  justify-content:space-between; 
-  width:260px; 
-  height:55px; 
-  background: rgba(0,0,0,0.7);
-  border-radius:15px; 
-  padding:10px 15px; 
-  z-index:1; 
-}
+.team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background: rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
 
-.team-info { 
-  display:flex; 
-  flex-direction:column; 
-  justify-content:center; 
-  flex-grow:1; 
-  margin-left:10px; 
-}
+.team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
+.team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
+.team-name { font-family: var(--font-team-name); font-size: var(--font-team-name-size); font-weight:bold; color:#fff; }
+.shots { font-size: var(--font-shots-size); color:#fff; }
 
-.team-logo { 
-  width:60px; 
-  height:60px; 
-  border-radius:50%; 
-  object-fit:cover; 
-  border:2px solid #fff; 
-}
-
-.team-name { 
-  font-family: var(--font-team-name); 
-  font-size: var(--font-team-name-size); 
-  font-weight:bold; 
-  color:#fff; 
-}
-
-.shots { 
-  font-family: var(--font-shots); 
-  font-size: var(--font-shots-size); 
-  color:#fff; 
-}
-
-.central-score { 
-  position:absolute; 
-  font-family: var(--font-score); 
-  font-weight:bold; 
-  font-size: var(--font-score-size); 
-  background:rgba(0,0,0,0.7); 
-  padding:15px 15px; 
-  border-radius:20px; 
-  box-shadow:0 0 20px rgba(0,0,0,0.5); 
-  z-index:2; 
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
-  justify-content:center; 
-}
-
-.score-row { 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  color:#fff; 
-}
-
-.vs { 
-  font-size: var(--font-vs-size); 
-  margin:0 10px; 
-  color:#fff; 
-}
-
-.period-clock { 
-  font-family: var(--font-period); 
-  font-size: var(--font-period-size); 
-  font-weight:normal; 
-  margin-top:5px; 
-  color:#fff; 
-}
+.central-score { position:absolute; font-weight:bold; font-size: var(--font-score-size); background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
+.vs { font-size: var(--font-vs-size); margin:0 10px; color:#fff; }
+.period-clock { font-size: var(--font-period-size); margin-top:5px; color:#fff; }
 
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
@@ -141,56 +61,49 @@ body {
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec"; // <-- Replace this
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec";
 
-let timerSeconds = 20 * 60;
+let timerSeconds = 20*60;
 let running = false;
 let period = 1;
 
-async function refresh() {
-  try {
+async function refresh(){
+  try{
     const res = await fetch(DATA_URL);
     const data = await res.json();
 
-    // Team A
-    document.getElementById("teamALogo").src = data.teamALogo || "";
-    document.getElementById("teamAName").innerText = data.teamAName || "";
-    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots || 0}`;
-    document.getElementById("teamAcard").style.backgroundColor = (data.teamAColor || "#000") + "33";
+    document.getElementById("teamALogo").src = data.teamALogo;
+    document.getElementById("teamAName").innerText = data.teamAName;
+    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
+    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
 
-    // Team B
-    document.getElementById("teamBLogo").src = data.teamBLogo || "";
-    document.getElementById("teamBName").innerText = data.teamBName || "";
-    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots || 0}`;
-    document.getElementById("teamBcard").style.backgroundColor = (data.teamBColor || "#000") + "33";
+    document.getElementById("teamBLogo").src = data.teamBLogo;
+    document.getElementById("teamBName").innerText = data.teamBName;
+    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
+    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
 
-    // Scores
-    document.getElementById("scoreA").innerText = data.teamAScore ?? 0;
-    document.getElementById("scoreB").innerText = data.teamBScore ?? 0;
+    document.getElementById("scoreA").innerText = data.teamAScore;
+    document.getElementById("scoreB").innerText = data.teamBScore;
 
-    // Period & Timer
-    period = data.Period ?? 1;
-    running = data.Running === true || data.Running === "TRUE";
-    timerSeconds = parseInt(data.TimerSeconds) || 0;
+    period = parseInt(data.Period);
+    running = (data.Running === 'TRUE' || data.Running === true);
+    timerSeconds = parseInt(data.TimerSeconds) || 20*60;
 
-  } catch (err) {
-    console.error("Failed to fetch scoreboard data:", err);
-  }
+  }catch(err){ console.error(err);}
 }
 
-function updateClockDisplay() {
-  const min = Math.floor(timerSeconds / 60);
-  const sec = timerSeconds % 60;
-  document.getElementById("periodClock").innerText =
-    `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} | Per ${period}`;
+function updateClockDisplay(){
+  const min = Math.floor(timerSeconds/60);
+  const sec = timerSeconds%60;
+  document.getElementById("periodClock").innerText = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
 }
 
-setInterval(() => {
-  if (running && timerSeconds > 0) timerSeconds--;
+setInterval(()=>{
+  if(running && timerSeconds>0) timerSeconds--;
   updateClockDisplay();
-}, 1000);
+},1000);
 
-setInterval(refresh, 1000);
+setInterval(refresh,2000);
 refresh();
 </script>
 </body>
