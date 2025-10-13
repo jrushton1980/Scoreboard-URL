@@ -5,44 +5,16 @@
 <style>
 body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
 .scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
-
-.team-card { 
-  display:flex; 
-  align-items:center; 
-  justify-content:space-between; 
-  width:260px; 
-  height:55px; 
-  background: rgba(0,0,0,0.7);
-  border-radius:15px; 
-  padding:10px 15px; 
-  z-index:1; 
-}
-
+.team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background: rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
 .team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
 .team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
 .team-name, .shots { color:#fff; }
 .team-name { font-size:20px; font-weight:bold; }
 .shots { font-size:16px; }
-
-.central-score { 
-  position:absolute; 
-  font-size:32px; /* smaller than before */
-  font-weight:bold; 
-  background:rgba(0,0,0,0.7); 
-  padding:10px 20px; /* smaller padding */
-  border-radius:20px; 
-  box-shadow:0 0 15px rgba(0,0,0,0.5); 
-  z-index:2; 
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
-  justify-content:center; 
-}
-
+.central-score { position:absolute; font-weight:bold; font-size:40px; background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
-.vs { font-size:28px; margin:0 10px; color:#fff; } /* smaller */
-.period-clock { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; } /* smaller */
-
+.vs { font-size:32px; margin:0 10px; color:#fff; }
+.period-display { font-size:16px; margin-top:5px; color:#fff; }
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
 </style>
@@ -63,7 +35,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
       <span class="vs">-</span>
       <span id="scoreB">0</span>
     </div>
-    <div class="period-clock" id="periodClock">20:00 | Per 1</div>
+    <div class="period-display" id="periodDisplay">Per 1</div>
   </div>
 
   <div class="team-card" id="teamBcard">
@@ -76,11 +48,7 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbwUio-09ug0U5SudOJI6oHLVVhdzp_CpVuJeiAOlT47J80_Pg2ladkEmcfF91J8j0vt/exec";
-
-let timerSeconds = 20*60; 
-let running = false;
-let period = 1;
+const DATA_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"; // Google Sheets JSON endpoint
 
 async function refresh() {
   try {
@@ -99,34 +67,15 @@ async function refresh() {
 
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
-
-    period = data.Period;
-    if(!running){
-      const [m,s] = (data.DefaultPeriodLength || "20:00").split(":").map(Number);
-      timerSeconds = m*60 + (s||0);
-    }
-  } catch (err) {
+    document.getElementById("periodDisplay").innerText = `Per ${data.Period}`;
+  } catch(err) {
     console.error("Failed to fetch scoreboard data:", err);
   }
 }
 
-function updateClockDisplay() {
-  const min = Math.floor(timerSeconds/60);
-  const sec = timerSeconds % 60;
-  document.getElementById("periodClock").innerText = 
-    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
-}
-
-setInterval(()=>{
-  if(running && timerSeconds>0) timerSeconds--;
-  updateClockDisplay();
-}, 1000);
-
-setInterval(refresh, 2000);
+// Refresh every 1 second
+setInterval(refresh, 1000);
 refresh();
-
-// Temporary click toggle for testing
-document.body.addEventListener("click", ()=>running = !running);
 </script>
 </body>
 </html>
