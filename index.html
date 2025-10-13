@@ -151,17 +151,17 @@ let timerSeconds = 20*60;
 let running = false;
 let period = 1;
 
-// Keep track of last known Running/TimerSeconds to detect changes
+// Track last known sheet state
 let lastRunning = false;
-let lastTimerSeconds = 20*60;
+let lastTimerSeconds = timerSeconds;
 
-// Fetch all scoreboard data
-async function fetchData(){
+// Fetch data from Google Sheet
+async function fetchData() {
   try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
 
-    // Update team info
+    // Update team info and scores
     document.getElementById("teamALogo").src = data.teamALogo || '';
     document.getElementById("teamAName").innerText = data.teamAName || '';
     document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots || 0}`;
@@ -177,26 +177,26 @@ async function fetchData(){
 
     period = data.Period || 1;
 
-    // Sync Running / TimerSeconds if changed
-    if(data.Running !== lastRunning){
-      running = data.Running === true || data.Running === "TRUE";
-      lastRunning = running;
-    }
-    if(parseInt(data.TimerSeconds) !== lastTimerSeconds){
-      timerSeconds = parseInt(data.TimerSeconds) || 20*60;
-      lastTimerSeconds = timerSeconds;
+    // Only update local timer if sheet Running status changes
+    const sheetRunning = data.Running === true || data.Running === "TRUE";
+    const sheetTimer = parseInt(data.TimerSeconds) || 20*60;
+
+    if(sheetRunning !== lastRunning || sheetTimer !== lastTimerSeconds){
+      running = sheetRunning;
+      timerSeconds = sheetTimer;
+      lastRunning = sheetRunning;
+      lastTimerSeconds = sheetTimer;
     }
 
     updateClockDisplay();
   } catch(err){
-    console.error("Failed to fetch scoreboard data:", err);
+    console.error("Failed to fetch data:", err);
   }
 }
 
-// Format MM:SS
 function formatTime(sec){
   const m = Math.floor(sec/60);
-  const s = sec%60;
+  const s = sec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
@@ -212,10 +212,10 @@ setInterval(()=>{
   }
 },1000);
 
-// Poll Google Sheet every 2s for changes
+// Poll sheet every 2s for updates to Running/TimerSeconds
 setInterval(fetchData,2000);
 
-// Initial load
+// Initial fetch
 fetchData();
 </script>
 </body>
