@@ -2,93 +2,305 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoreboard Control</title>
 <style>
-  body {
-    font-family: "Roboto", sans-serif;
-    background: #111;
-    color: white;
-    padding: 20px;
-  }
-  button {
-    font-size: 18px;
-    padding: 10px 15px;
-    margin: 5px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .start { background: green; color: white; }
-  .stop { background: red; color: white; }
-  .reset { background: orange; color: white; }
-  .score, .shots { background: #333; }
-  input { font-size: 18px; padding: 5px; margin: 5px; width: 80px; text-align: center; }
+body {
+  background-color: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Top scoreboard */
+.scoreboard {
+  width: 95%;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.team-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 18px;
+}
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 36px;
+  margin-top: 6px;
+}
+.shots-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  margin-top: 4px;
+  opacity: 0.85;
+}
+
+/* Clock + Period */
+.clock-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 95%;
+  background: #1d1d1d;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.clock-section button {
+  flex: 1;
+  font-size: 18px;
+  padding: 14px 0;
+  margin: 0 4px;
+  border-radius: 8px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+}
+#timer {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+#period {
+  font-size: 18px;
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Start/Stop */
+#startStopBtn {
+  width: 95%;
+  font-size: 28px;
+  padding: 40px 0;
+  border-radius: 12px;
+  border: none;
+  color: white;
+  background-color: #28a745;
+  margin-bottom: 16px;
+}
+
+/* Team controls */
+.team-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 95%;
+  gap: 10px;
+}
+.team-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.team-column button.plus {
+  width: 100%;
+  font-size: 24px;
+  padding: 40px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #555;
+  color: #fff;
+}
+.team-column button.minus {
+  width: 100%;
+  font-size: 24px;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #777;
+  color: #fff;
+}
+
+/* Settings icon */
+.settings-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
-<h2>Scoreboard Control</h2>
+<button class="settings-btn" onclick="openSettings()">⚙️</button>
 
-<div>
-  <button class="start" onclick="toggleTimer()">Start / Stop</button>
-  <button class="reset" onclick="resetTimer()">Reset</button>
-  <input type="text" id="customTime" placeholder="MM:SS">
-  <button onclick="setCustom()">Set Time</button>
+<!-- Top scoreboard -->
+<div class="scoreboard">
+  <div class="team-row">
+    <span id="teamAName">SPKAC Leafs</span>
+    <span id="teamBName">CAC Imperial</span>
+  </div>
+  <div class="score-row">
+    <span id="teamAScore">0</span>
+    <span style="opacity:0.8;">-</span>
+    <span id="teamBScore">0</span>
+  </div>
+  <div class="shots-row">
+    <span id="teamAShots">Shots: 0</span>
+    <span id="teamBShots">Shots: 0</span>
+  </div>
 </div>
 
-<h3>Score & Shots</h3>
-<div>
-  <h4>Team A</h4>
-  <button class="score" onclick="updateValue('teamAScore', 1)">+ Score</button>
-  <button class="score" onclick="updateValue('teamAScore', -1)">- Score</button>
-  <button class="shots" onclick="updateValue('teamAShots', 1)">+ Shot</button>
-  <button class="shots" onclick="updateValue('teamAShots', -1)">- Shot</button>
+<!-- Clock + Period -->
+<div class="clock-section">
+  <button onclick="setPeriod()">Period</button>
+  <div style="flex:2;">
+    <div id="timer">20:00</div>
+    <div id="period">Period 1</div>
+  </div>
+  <button onclick="setClock()">Clock</button>
 </div>
 
-<div>
-  <h4>Team B</h4>
-  <button class="score" onclick="updateValue('teamBScore', 1)">+ Score</button>
-  <button class="score" onclick="updateValue('teamBScore', -1)">- Score</button>
-  <button class="shots" onclick="updateValue('teamBShots', 1)">+ Shot</button>
-  <button class="shots" onclick="updateValue('teamBShots', -1)">- Shot</button>
-</div>
+<!-- Start/Stop -->
+<button id="startStopBtn" onclick="toggleClock()">Start</button>
 
-<h3>Period</h3>
-<button onclick="changePeriod(-1)">Prev Period</button>
-<button onclick="changePeriod(1)">Next Period</button>
+<!-- Team Controls -->
+<div class="team-controls">
+  <!-- Team A -->
+  <div class="team-column">
+    <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
+    <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
+    <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
+  </div>
+
+  <!-- Team B -->
+  <div class="team-column">
+    <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
+    <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
+    <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
+  </div>
+</div>
 
 <script>
-const UPDATE_URL = "https://script.google.com/macros/s/AKfycbz1cCq3KGCdHG1km939b9IV4LRZkJeW5ldzG4RwH23o5KtvqoVSZrm_dqDsufE4a1jp/exec"; // <-- same as index.html
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec";
 
-async function postData(action, params={}) {
-  const url = `${UPDATE_URL}?action=${action}`;
-  const res = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(params),
-    headers: { "Content-Type": "application/json" }
-  });
-  return res.json();
+let timerInterval;
+let isRunning = false;
+let timeRemaining = 20*60;
+let period = 1;
+
+// Fetch initial data from Google Sheets
+async function fetchData() {
+  try {
+    const res = await fetch(DATA_URL);
+    const data = await res.json();
+    document.getElementById('teamAName').textContent = data.teamAName;
+    document.getElementById('teamBName').textContent = data.teamBName;
+    document.getElementById('teamAScore').textContent = data.teamAScore;
+    document.getElementById('teamBScore').textContent = data.teamBScore;
+    document.getElementById('teamAShots').textContent = `Shots: ${data.teamAShots}`;
+    document.getElementById('teamBShots').textContent = `Shots: ${data.teamBShots}`;
+    period = data.Period;
+    timeRemaining = data.TimerSeconds;
+    isRunning = data.Running;
+    updateTimerDisplay();
+  } catch (err) {
+    console.error('Error fetching data:', err);
+  }
 }
 
-function updateValue(key, delta) {
-  google.script.run.withSuccessHandler(()=>{}).updateValue(key, delta);
+// Send updated value to backend
+async function sendUpdate(params) {
+  const query = new URLSearchParams(params);
+  try {
+    await fetch(`${DATA_URL}?${query.toString()}`);
+  } catch (err) {
+    console.error('Error sending update:', err);
+  }
 }
 
-function changePeriod(delta) {
-  google.script.run.withSuccessHandler(()=>{}).changePeriod(delta);
+function formatTime(sec){
+  const m = Math.floor(sec/60);
+  const s = sec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-function toggleTimer() {
-  google.script.run.withSuccessHandler(()=>{}).toggleRunning();
+function updateTimerDisplay(){
+  document.getElementById('timer').textContent = formatTime(timeRemaining);
+  document.getElementById('period').textContent = `Period ${period}`;
 }
 
-function resetTimer() {
-  google.script.run.withSuccessHandler(()=>{}).resetTimer();
+function toggleClock(){
+  const btn = document.getElementById('startStopBtn');
+  isRunning = !isRunning;
+  btn.textContent = isRunning ? 'Stop' : 'Start';
+  btn.style.backgroundColor = isRunning ? '#dc3545' : '#28a745';
+  sendUpdate({action:'toggleRunning', Running:isRunning});
+  if(isRunning){
+    clearInterval(timerInterval);
+    timerInterval = setInterval(()=>{
+      if(timeRemaining>0){
+        timeRemaining--;
+        updateTimerDisplay();
+        sendUpdate({action:'updateTimer', TimerSeconds:timeRemaining});
+      } else {
+        clearInterval(timerInterval);
+        isRunning=false;
+        btn.textContent='Start';
+        btn.style.backgroundColor='#28a745';
+        sendUpdate({action:'toggleRunning', Running:false});
+      }
+    },1000);
+  } else {
+    clearInterval(timerInterval);
+  }
 }
 
-function setCustom() {
-  const t = document.getElementById("customTime").value;
-  if (t) google.script.run.withSuccessHandler(()=>{}).setCustomTime(t);
+function setPeriod(){
+  const val=parseInt(prompt("Enter Period number:"));
+  if(!isNaN(val) && val>0){
+    period=val;
+    updateTimerDisplay();
+    sendUpdate({action:'updatePeriod', Period:period});
+  }
 }
+
+function setClock(){
+  const input=prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s] = input.split(':').map(Number);
+    timeRemaining = m*60 + s;
+    updateTimerDisplay();
+    sendUpdate({action:'updateTimer', TimerSeconds:timeRemaining});
+  }
+}
+
+function updateScore(team, change){
+  const el=document.getElementById(`team${team}Score`);
+  el.textContent = Math.max(0,parseInt(el.textContent)+change);
+  sendUpdate({action:'updateScore', team:team, score:el.textContent});
+}
+
+function updateShots(team, change){
+  const el=document.getElementById(`team${team}Shots`);
+  const current = parseInt(el.textContent.replace('Shots: ','')||0);
+  el.textContent = `Shots: ${Math.max(0,current+change)}`;
+  sendUpdate({action:'updateShots', team:team, shots:parseInt(el.textContent.replace('Shots: ',''))});
+}
+
+function openSettings(){
+  alert("Team selection screen coming soon!");
+}
+
+// Initial load
+fetchData();
+updateTimerDisplay();
 </script>
 </body>
 </html>
