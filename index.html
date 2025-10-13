@@ -5,19 +5,15 @@
 <style>
 body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
 .scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
-
 .team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background: rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
 .team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
 .team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
-.team-name, .shots { color:#fff; }
-.team-name { font-size:20px; font-weight:bold; }
-.shots { font-size:16px; }
-
+.team-name { font-size:20px; font-weight:bold; color:#fff; }
+.shots { font-size:16px; color:#fff; }
 .central-score { position:absolute; font-weight:bold; font-size:40px; background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
 .vs { font-size:32px; margin:0 10px; color:#fff; }
-.period-clock { font-size:16px; font-weight:normal; margin-top:5px; color:#fff; }
-
+.period-clock { font-size:16px; color:#fff; margin-top:5px; }
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
 </style>
@@ -51,13 +47,20 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbzcJ7dVzO34FUYnLp8LqlXPlUZ-UvFTH13_R8Gjtg4RWPV_hPIw4QC9MPXsl2ZT_FRu/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbxG2Rc_MiZEkcAsc1zLccJO0lpQP3gs7zSfN73VMovIfbFWEmboX_z6yBh0LOywjPqp/exec";
 
 let timerSeconds = 20*60;
 let running = false;
 let period = 1;
-let lastUpdate = Date.now();
 
+// Smooth timer
+function updateClockDisplay() {
+  const m = Math.floor(timerSeconds/60);
+  const s = timerSeconds % 60;
+  document.getElementById("periodClock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} | Per ${period}`;
+}
+
+// Fetch Google Sheet data
 async function refresh() {
   try {
     const res = await fetch(DATA_URL);
@@ -76,28 +79,22 @@ async function refresh() {
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
 
-    period = Number(data.Period);
-    running = (data.Running === "TRUE");
-    timerSeconds = Number(data.TimerSeconds);
-
-    lastUpdate = Date.now();
-  } catch(err) {
-    console.error(err);
+    period = data.Period || 1;
+    if(!running){
+      timerSeconds = Number(data.TimerSeconds) || 20*60;
+      running = data.Running === "TRUE" || data.Running === true;
+    }
+  } catch(e){
+    console.error("Failed to fetch data:", e);
   }
 }
 
-function updateClockDisplay(){
-  let displaySeconds = timerSeconds;
-  if(running){
-    const elapsed = Math.floor((Date.now() - lastUpdate)/1000);
-    displaySeconds = Math.max(0, timerSeconds - elapsed);
-  }
-  const m = Math.floor(displaySeconds/60);
-  const s = displaySeconds % 60;
-  document.getElementById("periodClock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} | Per ${period}`;
-}
+// Main interval
+setInterval(()=>{
+  if(running && timerSeconds>0) timerSeconds--;
+  updateClockDisplay();
+}, 1000);
 
-setInterval(()=>{ updateClockDisplay(); }, 250);
 setInterval(refresh, 2000);
 refresh();
 </script>
