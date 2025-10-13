@@ -1,93 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Scoreboard Overlay</title>
 <style>
-body {
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  color: white;
-  font-family: "Arial", sans-serif;
-  text-align: center;
+:root {
+  --font-team-name: 'Arial', sans-serif;
+  --font-team-name-size: 22px;
+  --font-shots: 'Arial', sans-serif;
+  --font-shots-size: 16px;
+  --font-score: 'Arial', sans-serif;
+  --font-score-size: 40px;
+  --font-vs-size: 32px;
+  --font-period: 'Arial', sans-serif;
+  --font-period-size: 16px;
 }
-
-.scoreboard-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 40px;
-}
-
-.team-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 260px;
-  height: 55px;
-  border-radius: 15px;
-  padding: 10px 15px;
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.team-info {
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-}
-
-.team-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #fff;
-}
-
-.team-name {
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.shots {
-  font-size: 14px;
-  color: #ddd;
-}
-
-.central-score {
-  position: absolute;
-  font-size: 40px;
-  font-weight: bold;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 15px 20px;
-  border-radius: 20px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 2;
-}
-
-.score-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vs {
-  margin: 0 10px;
-}
-
-.period-clock {
-  margin-top: 5px;
-  font-size: 18px;
-}
-
-#teamAcard { margin-right: 70px; }
-#teamBcard { margin-left: 70px; }
+body { margin:0; padding:0; font-family: var(--font-team-name); background:transparent; display:flex; flex-direction:column; align-items:center; }
+.scoreboard-wrapper { position:relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
+.team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background:rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
+.team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
+.team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
+.team-name { font-family: var(--font-team-name); font-size: var(--font-team-name-size); font-weight:bold; color:#fff; }
+.shots { font-family: var(--font-shots); font-size: var(--font-shots-size); color:#fff; }
+.central-score { position:absolute; font-family: var(--font-score); font-weight:bold; font-size: var(--font-score-size); background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
+.vs { font-size: var(--font-vs-size); margin:0 10px; color:#fff; }
+.period-clock { font-family: var(--font-period); font-size: var(--font-period-size); font-weight:normal; margin-top:5px; color:#fff; }
+#teamAcard { margin-right:70px; } #teamBcard { margin-left:70px; }
 </style>
 </head>
 <body>
@@ -95,11 +33,10 @@ body {
   <div class="team-card" id="teamAcard">
     <img class="team-logo" id="teamALogo">
     <div class="team-info">
-      <div class="team-name" id="teamAName">Team A</div>
-      <div class="shots" id="teamAShots">Shots: 0</div>
+      <div class="team-name" id="teamAName"></div>
+      <div class="shots" id="teamAShots"></div>
     </div>
   </div>
-
   <div class="central-score">
     <div class="score-row">
       <span id="scoreA">0</span>
@@ -108,93 +45,61 @@ body {
     </div>
     <div class="period-clock" id="periodClock">20:00 | Per 1</div>
   </div>
-
   <div class="team-card" id="teamBcard">
     <img class="team-logo" id="teamBLogo">
     <div class="team-info">
-      <div class="team-name" id="teamBName">Team B</div>
-      <div class="shots" id="teamBShots">Shots: 0</div>
+      <div class="team-name" id="teamBName"></div>
+      <div class="shots" id="teamBShots"></div>
     </div>
   </div>
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbytIuXy17Y27QTgQdXsFVUeAKKGQJr8q588j3cVWU5qPZ6RzrobufWA-LZx2gJgzz--/exec"; // Replace with your Apps Script Web App URL
+const DATA_URL = "https://script.google.com/macros/s/AKfycbytIuXy17Y27QTgQdXsFVUeAKKGQJr8q588j3cVWU5qPZ6RzrobufWA-LZx2gJgzz--/exec";
 
-let timerSeconds = 20 * 60;
+let timerSeconds = 20*60;
 let running = false;
 let period = 1;
-let lastRunning = false;
-let tickInterval = null;
 
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-}
-
-function updateClockDisplay() {
-  document.getElementById("periodClock").innerText = `${formatTime(timerSeconds)} | Per ${period}`;
-}
-
-function startLocalTimer() {
-  clearInterval(tickInterval);
-  tickInterval = setInterval(() => {
-    if (running && timerSeconds > 0) {
-      timerSeconds--;
-      updateClockDisplay();
-    }
-  }, 1000);
-}
-
-function stopLocalTimer() {
-  clearInterval(tickInterval);
-}
-
+// Fetch Google Sheet data
 async function refresh() {
   try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
-
-    // Apply all data from sheet
+    document.getElementById("teamALogo").src = data.teamALogo || "";
     document.getElementById("teamAName").innerText = data.teamAName || "";
-    document.getElementById("teamBName").innerText = data.teamBName || "";
     document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots || 0}`;
+    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor ? data.teamAColor+"33" : "#00000033";
+
+    document.getElementById("teamBLogo").src = data.teamBLogo || "";
+    document.getElementById("teamBName").innerText = data.teamBName || "";
     document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots || 0}`;
+    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor ? data.teamBColor+"33" : "#00000033";
+
     document.getElementById("scoreA").innerText = data.teamAScore || 0;
     document.getElementById("scoreB").innerText = data.teamBScore || 0;
-    document.getElementById("teamALogo").src = data.teamALogo || "";
-    document.getElementById("teamBLogo").src = data.teamBLogo || "";
 
-    // Team colors
-    if (data.teamAColor) document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "cc";
-    if (data.teamBColor) document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "cc";
-
-    // Timer + state
-    period = data.Period || 1;
     const newRunning = data.Running === true || data.Running === "TRUE";
-    const newTime = parseInt(data.TimerSeconds) || 0;
+    if(newRunning !== running) running = newRunning;
 
-    // If timer state changed
-    if (newRunning !== running) {
-      running = newRunning;
-      if (running) startLocalTimer();
-      else stopLocalTimer();
-    }
-
-    // Sync seconds when not running
-    if (!running || Math.abs(timerSeconds - newTime) > 2) {
-      timerSeconds = newTime;
-      updateClockDisplay();
-    }
-
-  } catch (err) {
-    console.error("Fetch failed:", err);
-  }
+    period = parseInt(data.Period) || 1;
+  } catch(err) { console.error("Failed to fetch data:", err); }
 }
 
+function updateClockDisplay() {
+  const min = Math.floor(timerSeconds/60);
+  const sec = timerSeconds%60;
+  document.getElementById("periodClock").innerText = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
+}
+
+// Local timer
+setInterval(()=>{
+  if(running && timerSeconds>0) timerSeconds--;
+  updateClockDisplay();
+},1000);
+
+setInterval(refresh,2000);
 refresh();
-setInterval(refresh, 1000);
 </script>
 </body>
 </html>
