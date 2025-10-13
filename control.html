@@ -76,12 +76,14 @@ let running = false;
 
 async function postUpdate(updateObj){
   try {
-    await fetch(DATA_URL,{
-      method:'POST',
-      contentType:'application/json',
-      payload: JSON.stringify(updateObj)
+    await fetch(DATA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateObj)
     });
-  } catch(err){ console.error(err); }
+  } catch(err){
+    console.error("Failed to update Sheet:", err);
+  }
 }
 
 function updateTimerDisplay(){
