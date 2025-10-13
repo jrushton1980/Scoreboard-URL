@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <style>
-body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
-.scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
-.team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background: rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
-.team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
-.team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
-.team-name { font-size:20px; font-weight:bold; color:#fff; }
-.shots { font-size:16px; color:#fff; }
-.central-score { position:absolute; font-weight:bold; font-size:40px; background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
-.vs { font-size:32px; margin:0 10px; color:#fff; }
-.period-clock { font-size:16px; color:#fff; margin-top:5px; }
-#teamAcard { margin-right:70px; }
-#teamBcard { margin-left:70px; }
+body{margin:0;padding:0;font-family:Arial,sans-serif;background:transparent;display:flex;flex-direction:column;align-items:center;}
+.scoreboard-wrapper{position:relative;display:flex;justify-content:center;align-items:center;margin-top:40px;}
+.team-card{display:flex;align-items:center;justify-content:space-between;width:260px;height:55px;background:rgba(0,0,0,0.7);border-radius:15px;padding:10px 15px;z-index:1;}
+.team-info{display:flex;flex-direction:column;justify-content:center;flex-grow:1;margin-left:10px;}
+.team-logo{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #fff;}
+.team-name{font-size:22px;font-weight:bold;color:#fff;}
+.shots{font-size:16px;color:#fff;}
+.central-score{position:absolute;font-weight:bold;font-size:40px;background:rgba(0,0,0,0.7);padding:15px 15px;border-radius:20px;box-shadow:0 0 20px rgba(0,0,0,0.5);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-row{display:flex;align-items:center;justify-content:center;color:#fff;}
+.vs{font-size:32px;margin:0 10px;color:#fff;}
+.period-clock{font-size:16px;font-weight:normal;margin-top:5px;color:#fff;}
+#teamAcard{margin-right:70px;}
+#teamBcard{margin-left:70px;}
 </style>
 </head>
 <body>
@@ -47,56 +47,49 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbxG2Rc_MiZEkcAsc1zLccJO0lpQP3gs7zSfN73VMovIfbFWEmboX_z6yBh0LOywjPqp/exec";
+const DATA_URL="https://script.google.com/macros/s/AKfycby0g-ohHS9LgHqaGBUid8C_8iEHwwjmfnxpMma1g58VqF4GTVclg1exhfOn9oyIWoXd/exec";
 
-let timerSeconds = 20*60;
-let running = false;
-let period = 1;
+let timerSeconds=0;
+let running=false;
+let period=1;
+
+async function refreshData(){
+  try{
+    const res=await fetch(DATA_URL);
+    const data=await res.json();
+    document.getElementById("teamALogo").src=data.teamALogo;
+    document.getElementById("teamAName").textContent=data.teamAName;
+    document.getElementById("teamAShots").textContent=`Shots: ${data.teamAShots}`;
+    document.getElementById("teamBLogo").src=data.teamBLogo;
+    document.getElementById("teamBName").textContent=data.teamBName;
+    document.getElementById("teamBShots").textContent=`Shots: ${data.teamBShots}`;
+    document.getElementById("scoreA").textContent=data.teamAScore;
+    document.getElementById("scoreB").textContent=data.teamBScore;
+    period=parseInt(data.Period);
+    const newSeconds=parseInt(data.TimerSeconds);
+    // update local timer if Running changed
+    if(running!= (data.Running=="TRUE")){
+      running = (data.Running=="TRUE");
+      timerSeconds=newSeconds;
+    }
+  }catch(err){ console.error(err); }
+}
+
+function updateClockDisplay(){
+  const m=Math.floor(timerSeconds/60);
+  const s=timerSeconds%60;
+  document.getElementById("periodClock").textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} | Per ${period}`;
+}
 
 // Smooth timer
-function updateClockDisplay() {
-  const m = Math.floor(timerSeconds/60);
-  const s = timerSeconds % 60;
-  document.getElementById("periodClock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} | Per ${period}`;
-}
-
-// Fetch Google Sheet data
-async function refresh() {
-  try {
-    const res = await fetch(DATA_URL);
-    const data = await res.json();
-
-    document.getElementById("teamALogo").src = data.teamALogo;
-    document.getElementById("teamAName").innerText = data.teamAName;
-    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
-    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
-
-    document.getElementById("teamBLogo").src = data.teamBLogo;
-    document.getElementById("teamBName").innerText = data.teamBName;
-    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
-    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
-
-    document.getElementById("scoreA").innerText = data.teamAScore;
-    document.getElementById("scoreB").innerText = data.teamBScore;
-
-    period = data.Period || 1;
-    if(!running){
-      timerSeconds = Number(data.TimerSeconds) || 20*60;
-      running = data.Running === "TRUE" || data.Running === true;
-    }
-  } catch(e){
-    console.error("Failed to fetch data:", e);
-  }
-}
-
-// Main interval
 setInterval(()=>{
   if(running && timerSeconds>0) timerSeconds--;
   updateClockDisplay();
-}, 1000);
+},1000);
 
-setInterval(refresh, 2000);
-refresh();
+// Poll for updates every 2s
+setInterval(refreshData,2000);
+refreshData();
 </script>
 </body>
 </html>
