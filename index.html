@@ -147,70 +147,76 @@ body {
 <script>
 const DATA_URL = "https://script.google.com/macros/s/AKfycbytIuXy17Y27QTgQdXsFVUeAKKGQJr8q588j3cVWU5qPZ6RzrobufWA-LZx2gJgzz--/exec";
 
-let timerSeconds = 20*60; 
+let timerSeconds = 20*60;
 let running = false;
 let period = 1;
-let lastRunning = null; // track previous state
 
-function formatTime(s){
-  const m = Math.floor(s/60);
-  const sec = s%60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
+// Keep track of last known Running/TimerSeconds to detect changes
+let lastRunning = false;
+let lastTimerSeconds = 20*60;
 
-function updateClockDisplay(){
-  document.getElementById("periodClock").innerText = `${formatTime(timerSeconds)} | Per ${period}`;
-}
-
-// Local smooth timer
-setInterval(()=>{
-  if(running && timerSeconds>0) timerSeconds--;
-  updateClockDisplay();
-},1000);
-
-// Fetch data from Google Sheet
-async function refresh(){
-  try{
+// Fetch all scoreboard data
+async function fetchData(){
+  try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
 
     // Update team info
-    document.getElementById("teamALogo").src = data.teamALogo || "";
-    document.getElementById("teamAName").innerText = data.teamAName || "";
+    document.getElementById("teamALogo").src = data.teamALogo || '';
+    document.getElementById("teamAName").innerText = data.teamAName || '';
     document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots || 0}`;
-    if(data.teamAColor) document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
+    document.getElementById("teamAcard").style.backgroundColor = (data.teamAColor||"#000")+"33";
 
-    document.getElementById("teamBLogo").src = data.teamBLogo || "";
-    document.getElementById("teamBName").innerText = data.teamBName || "";
+    document.getElementById("teamBLogo").src = data.teamBLogo || '';
+    document.getElementById("teamBName").innerText = data.teamBName || '';
     document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots || 0}`;
-    if(data.teamBColor) document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
+    document.getElementById("teamBcard").style.backgroundColor = (data.teamBColor||"#000")+"33";
 
     document.getElementById("scoreA").innerText = data.teamAScore || 0;
     document.getElementById("scoreB").innerText = data.teamBScore || 0;
 
     period = data.Period || 1;
 
-    // Sync timer only if Running changed or big drift
-    const newRunning = data.Running === true || data.Running === "TRUE";
-    const newTime = parseInt(data.TimerSeconds) || timerSeconds;
-
-    if(lastRunning !== newRunning){
-      running = newRunning;
-      lastRunning = newRunning;
+    // Sync Running / TimerSeconds if changed
+    if(data.Running !== lastRunning){
+      running = data.Running === true || data.Running === "TRUE";
+      lastRunning = running;
+    }
+    if(parseInt(data.TimerSeconds) !== lastTimerSeconds){
+      timerSeconds = parseInt(data.TimerSeconds) || 20*60;
+      lastTimerSeconds = timerSeconds;
     }
 
-    // Correct timer if difference > 2 sec and not running
-    if(!running && Math.abs(timerSeconds - newTime) > 2){
-      timerSeconds = newTime;
-      updateClockDisplay();
-    }
-
-  }catch(err){ console.error("Failed to fetch scoreboard data:", err); }
+    updateClockDisplay();
+  } catch(err){
+    console.error("Failed to fetch scoreboard data:", err);
+  }
 }
 
-// Refresh every 2s
-setInterval(refresh,2000);
-refresh();
+// Format MM:SS
+function formatTime(sec){
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function updateClockDisplay(){
+  document.getElementById("periodClock").innerText = `${formatTime(timerSeconds)} | Per ${period}`;
+}
+
+// Smooth local timer
+setInterval(()=>{
+  if(running && timerSeconds>0){
+    timerSeconds--;
+    updateClockDisplay();
+  }
+},1000);
+
+// Poll Google Sheet every 2s for changes
+setInterval(fetchData,2000);
+
+// Initial load
+fetchData();
 </script>
 </body>
 </html>
