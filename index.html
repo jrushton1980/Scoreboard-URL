@@ -6,61 +6,62 @@
 <style>
   body {
     margin: 0;
-    background: black;
+    background-color: black;
     color: white;
     font-family: "Roboto", sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100vh;
+    overflow: hidden;
   }
 
   #scoreboard {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 50px;
+    height: 150px;
+    padding: 0 60px;
   }
 
   .team {
     text-align: center;
-    width: 40%;
+    width: 35%;
   }
 
   .team-logo {
-    height: 80px;
+    height: 70px;
     width: auto;
+    display: block;
+    margin: 0 auto 5px;
   }
 
   .team-name {
-    font-size: 28px;
-    font-weight: bold;
-    margin-top: 10px;
+    font-size: 26px;
+    font-weight: 600;
+    margin-top: 2px;
   }
 
   .score {
-    font-size: 80px;
-    font-weight: bold;
+    font-size: 72px;
+    font-weight: 700;
+    margin: 5px 0;
   }
 
   .shots {
     font-size: 18px;
-    margin-top: 5px;
-    color: #ccc;
+    opacity: 0.8;
   }
 
   #center {
+    width: 30%;
     text-align: center;
   }
 
   #clock {
-    font-size: 64px;
+    font-size: 60px;
     font-weight: bold;
+    color: white;
   }
 
   #period {
-    font-size: 28px;
-    color: white;
+    display: none; /* hidden, included in clock text below */
   }
 </style>
 </head>
@@ -68,9 +69,9 @@
   <div id="scoreboard">
     <div id="teamA" class="team">
       <img id="teamALogo" class="team-logo" src="">
-      <div id="teamAName" class="team-name"></div>
-      <div id="teamAScore" class="score"></div>
-      <div id="teamAShots" class="shots"></div>
+      <div id="teamAName" class="team-name">Team A</div>
+      <div id="teamAScore" class="score">0</div>
+      <div id="teamAShots" class="shots">Shots: 0</div>
     </div>
 
     <div id="center">
@@ -79,14 +80,14 @@
 
     <div id="teamB" class="team">
       <img id="teamBLogo" class="team-logo" src="">
-      <div id="teamBName" class="team-name"></div>
-      <div id="teamBScore" class="score"></div>
-      <div id="teamBShots" class="shots"></div>
+      <div id="teamBName" class="team-name">Team B</div>
+      <div id="teamBScore" class="score">0</div>
+      <div id="teamBShots" class="shots">Shots: 0</div>
     </div>
   </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbz1cCq3KGCdHG1km939b9IV4LRZkJeW5ldzG4RwH23o5KtvqoVSZrm_dqDsufE4a1jp/exec"; // <-- replace this with your actual web app URL
+const DATA_URL = "https://script.google.com/macros/s/AKfycbz1cCq3KGCdHG1km939b9IV4LRZkJeW5ldzG4RwH23o5KtvqoVSZrm_dqDsufE4a1jp/exec"; // <-- replace with your deployed Apps Script /exec URL
 
 let lastState = {};
 let lastTimerSeconds = null;
@@ -99,7 +100,7 @@ function formatTime(seconds) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-// update the scoreboard display
+// update scoreboard display
 function updateDisplay(state) {
   document.getElementById("teamAName").textContent = state.teamAName || "";
   document.getElementById("teamBName").textContent = state.teamBName || "";
@@ -134,7 +135,7 @@ function updateDisplay(state) {
   document.getElementById("clock").textContent = `${formatTime(seconds)} | Per ${period}`;
 }
 
-// fetch latest data from Google Sheets
+// fetch data from Google Sheets
 async function fetchData() {
   try {
     const res = await fetch(DATA_URL);
@@ -146,7 +147,7 @@ async function fetchData() {
   }
 }
 
-// fetch every 2 seconds, update timer every 100ms for smooth countdown
+// periodic refresh for smoothness
 setInterval(fetchData, 2000);
 setInterval(() => {
   if (lastState) updateDisplay(lastState);
