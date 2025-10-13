@@ -5,16 +5,45 @@
 <style>
 body { margin:0; padding:0; font-family: Arial; background: transparent; display:flex; flex-direction: column; align-items:center; }
 .scoreboard-wrapper { position: relative; display:flex; justify-content:center; align-items:center; margin-top:40px; }
-.team-card { display:flex; align-items:center; justify-content:space-between; width:260px; height:55px; background: rgba(0,0,0,0.7); border-radius:15px; padding:10px 15px; z-index:1; }
+
+.team-card { 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  width:260px; 
+  height:55px; 
+  background: rgba(0,0,0,0.7);
+  border-radius:15px; 
+  padding:10px 15px; 
+  z-index:1; 
+}
+
 .team-info { display:flex; flex-direction:column; justify-content:center; flex-grow:1; margin-left:10px; }
 .team-logo { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff; }
 .team-name, .shots { color:#fff; }
 .team-name { font-size:20px; font-weight:bold; }
 .shots { font-size:16px; }
-.central-score { position:absolute; font-weight:bold; font-size:40px; background:rgba(0,0,0,0.7); padding:15px 15px; border-radius:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+.central-score { 
+  position:absolute; 
+  font-weight:bold; 
+  font-size:40px; 
+  background:rgba(0,0,0,0.7); 
+  padding:15px 15px; 
+  border-radius:20px; 
+  box-shadow:0 0 20px rgba(0,0,0,0.5); 
+  z-index:2; 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
+}
+
 .score-row { display:flex; align-items:center; justify-content:center; color:#fff; }
 .vs { font-size:32px; margin:0 10px; color:#fff; }
-#periodClock { font-size:14px; font-weight:normal; margin-top:5px; color:#fff; }
+.period-clock { font-size:32px; font-weight:bold; color:#fff; }
+.period-text { font-size:18px; color:#fff; margin-top:4px; }
+
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
 </style>
@@ -28,15 +57,17 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
       <div class="shots" id="teamAShots"></div>
     </div>
   </div>
+
   <div class="central-score">
     <div class="score-row">
       <span id="scoreA">0</span>
       <span class="vs">-</span>
       <span id="scoreB">0</span>
     </div>
-    <div id="periodClock">20:00</div>
-    <div id="periodText">Per 1</div>
+    <div class="period-clock" id="clock">20:00</div>
+    <div class="period-text" id="period">Per 1</div>
   </div>
+
   <div class="team-card" id="teamBcard">
     <img class="team-logo" id="teamBLogo">
     <div class="team-info">
@@ -47,13 +78,13 @@ body { margin:0; padding:0; font-family: Arial; background: transparent; display
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycby9F1QUWo97GUwvk4K6U3DgnPidOVzAeGGXVaPJcrLwhn_MjH6tQYCSZwl_tDa2J9me/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbwpoQ1EAx7aNd2fmMqr_HcP-WNETMaGu8Fhz78RO9_MwR1BeXjPdfPmCzKQsm24_v5j/exec";
 
 let timerSeconds = 20*60;
 let running = false;
 let period = 1;
 
-async function refresh() {
+async function refreshData() {
   try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
@@ -72,27 +103,28 @@ async function refresh() {
     document.getElementById("scoreB").innerText = data.teamBScore;
 
     period = data.Period;
+    document.getElementById("period").innerText = `Per ${period}`;
+
     if(!running){
       const [m,s] = (data.DefaultPeriodLength || "20:00").split(":").map(Number);
       timerSeconds = m*60 + (s||0);
     }
-  } catch (err) { console.error(err); }
+  } catch(e) { console.error(e); }
 }
 
 function updateClockDisplay() {
-  const min = Math.floor(timerSeconds/60);
-  const sec = timerSeconds % 60;
-  document.getElementById("periodClock").innerText = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  document.getElementById("periodText").innerText = `Per ${period}`;
+  const m = Math.floor(timerSeconds/60);
+  const s = timerSeconds % 60;
+  document.getElementById("clock").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-setInterval(()=>{
+setInterval(() => {
   if(running && timerSeconds>0) timerSeconds--;
   updateClockDisplay();
 }, 1000);
 
-setInterval(refresh, 2000);
-refresh();
+setInterval(refreshData, 2000);
+refreshData();
 </script>
 </body>
 </html>
