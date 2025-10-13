@@ -5,25 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoreboard Control</title>
 <style>
-body { background-color:#111; color:#fff; font-family:Arial,sans-serif; margin:0; padding:10px; display:flex; flex-direction:column; align-items:center; }
-
+body { background-color: #111; color: #fff; font-family: Arial; margin:0; padding:10px; display:flex; flex-direction:column; align-items:center; }
 .scoreboard { width:95%; background:#1e1e1e; border-radius:12px; padding:10px; margin-bottom:12px; text-align:center; }
 .team-row { display:flex; justify-content:space-between; font-weight:bold; font-size:18px; }
 .score-row { display:flex; justify-content:space-between; font-size:36px; margin-top:6px; }
 .shots-row { display:flex; justify-content:space-between; font-size:16px; margin-top:4px; opacity:0.85; }
-
 .clock-section { display:flex; justify-content:space-between; align-items:center; width:95%; background:#1d1d1d; border-radius:12px; padding:10px; margin-bottom:12px; }
-.clock-section button { flex:1; font-size:18px; padding:14px 0; margin:0 4px; border-radius:8px; border:none; background-color:#333; color:#fff; cursor:pointer; }
+.clock-section button { flex:1; font-size:18px; padding:14px 0; margin:0 4px; border-radius:8px; border:none; background:#333; color:#fff; cursor:pointer; }
 #timer { font-size:28px; font-weight:bold; text-align:center; }
 #period { font-size:18px; text-align:center; margin-top:2px; }
-
-#startStopBtn { width:95%; font-size:28px; padding:40px 0; border-radius:12px; border:none; color:#fff; background-color:#28a745; margin-bottom:16px; }
-
+#startStopBtn { width:95%; font-size:28px; padding:40px 0; border-radius:12px; border:none; color:white; background-color:#28a745; margin-bottom:16px; }
 .team-controls { display:flex; justify-content:space-between; width:95%; gap:10px; }
 .team-column { flex:1; display:flex; flex-direction:column; gap:6px; }
 .team-column button.plus { width:100%; font-size:24px; padding:40px 0; border-radius:10px; border:none; background-color:#555; color:#fff; }
 .team-column button.minus { width:100%; font-size:24px; padding:12px 0; border-radius:10px; border:none; background-color:#777; color:#fff; }
-
 .settings-btn { position:fixed; top:10px; right:10px; background:none; border:none; color:#fff; font-size:28px; cursor:pointer; }
 </style>
 </head>
@@ -73,93 +68,77 @@ body { background-color:#111; color:#fff; font-family:Arial,sans-serif; margin:0
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyxUAPt5xMXJNrEJdm0R2TpVcrrBG0xG-M3Z1-cc4U-rLh7z069txBTTPTVo7WiCX2c/exec";
 
-let timerInterval;
-let isRunning = false;
-let timeRemaining = 20*60;
+let timerSeconds = 20*60;
 let period = 1;
+let running = false;
 
-async function fetchData(){
-  const res = await fetch(WEBAPP_URL);
-  const data = await res.json();
-
-  document.getElementById("teamAName").innerText = data.teamAName;
-  document.getElementById("teamBName").innerText = data.teamBName;
-  document.getElementById("teamAScore").innerText = data.teamAScore;
-  document.getElementById("teamBScore").innerText = data.teamBScore;
-  document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
-  document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
-
-  period = parseInt(data.Period);
-  isRunning = (data.Running==='TRUE' || data.Running===true);
-  timeRemaining = parseInt(data.TimerSeconds)||20*60;
-
-  updateTimerDisplay();
+async function postUpdate(updateObj){
+  try {
+    await fetch(DATA_URL,{
+      method:'POST',
+      contentType:'application/json',
+      payload: JSON.stringify(updateObj)
+    });
+  } catch(err){ console.error(err); }
 }
 
 function updateTimerDisplay(){
-  document.getElementById('timer').textContent = `${String(Math.floor(timeRemaining/60)).padStart(2,'0')}:${String(timeRemaining%60).padStart(2,'0')}`;
+  document.getElementById('timer').textContent = `${String(Math.floor(timerSeconds/60)).padStart(2,'0')}:${String(timerSeconds%60).padStart(2,'0')}`;
   document.getElementById('period').textContent = `Period ${period}`;
 }
 
-async function sendUpdate(field,value){
-  await fetch(`${WEBAPP_URL}?field=${field}&value=${value}`);
-}
-
 function toggleClock(){
-  isRunning = !isRunning;
-  sendUpdate('Running',isRunning?'TRUE':'FALSE');
   const btn = document.getElementById('startStopBtn');
-  btn.textContent = isRunning?'Stop':'Start';
-  btn.style.backgroundColor = isRunning?'#dc3545':'#28a745';
+  running = !running;
+  btn.textContent = running?'Stop':'Start';
+  btn.style.backgroundColor = running?'#dc3545':'#28a745';
+  postUpdate({Running:running, TimerSeconds:timerSeconds});
+  if(running){
+    const interval = setInterval(()=>{
+      if(!running){ clearInterval(interval); return; }
+      if(timerSeconds>0) timerSeconds--;
+      updateTimerDisplay();
+    },1000);
+  }
 }
 
 function setPeriod(){
-  const val = prompt("Enter Period number:");
-  const n = parseInt(val);
-  if(!isNaN(n) && n>0){
-    period = n;
-    sendUpdate('Period',period);
-    updateTimerDisplay();
-  }
+  const val=parseInt(prompt("Enter Period number:"));
+  if(!isNaN(val) && val>0){ period=val; updateTimerDisplay(); postUpdate({Period:period}); }
 }
 
 function setClock(){
-  const val = prompt("Enter time MM:SS:");
-  if(val && /^\d{1,2}:\d{2}$/.test(val)){
-    const [m,s] = val.split(':').map(Number);
-    timeRemaining = m*60 + s;
-    sendUpdate('TimerSeconds',timeRemaining);
+  const input=prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s] = input.split(':').map(Number);
+    timerSeconds = m*60 + s;
     updateTimerDisplay();
+    postUpdate({TimerSeconds:timerSeconds});
   }
 }
 
-function updateScore(team,change){
+function updateScore(team, change){
   const el = document.getElementById(`team${team}Score`);
-  const newVal = Math.max(0,parseInt(el.textContent)+change);
-  el.textContent = newVal;
-  sendUpdate(`team${team}Score`,newVal);
+  el.textContent = Math.max(0, parseInt(el.textContent)+change);
+  const obj = {};
+  obj[`team${team}Score`] = parseInt(el.textContent);
+  postUpdate(obj);
 }
 
-function updateShots(team,change){
+function updateShots(team, change){
   const el = document.getElementById(`team${team}Shots`);
-  const current = parseInt(el.textContent.replace('Shots: ','')||0);
-  const newVal = Math.max(0,current+change);
-  el.textContent = `Shots: ${newVal}`;
-  sendUpdate(`team${team}Shots`,newVal);
+  const val = Math.max(0, parseInt(el.textContent.replace('Shots: ','')||0)+change);
+  el.textContent = `Shots: ${val}`;
+  const obj = {};
+  obj[`team${team}Shots`] = val;
+  postUpdate(obj);
 }
 
-setInterval(()=>{
-  if(isRunning && timeRemaining>0){
-    timeRemaining--;
-    sendUpdate('TimerSeconds',timeRemaining);
-    updateTimerDisplay();
-  }
-},1000);
+function openSettings(){ alert("Team selection screen coming soon!"); }
 
-setInterval(fetchData,2000);
-fetchData();
+updateTimerDisplay();
 </script>
 </body>
 </html>
