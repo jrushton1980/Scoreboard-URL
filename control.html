@@ -138,155 +138,116 @@ let isRunning = false;
 let timeRemaining = 20*60;
 let period = 1;
 
-// Fetch initial sheet data
+// Fetch initial data from Google Sheet
 async function fetchData() {
   try {
     const res = await fetch(DATA_URL);
     const data = await res.json();
-    document.getElementById('teamAName').textContent = data.teamAName;
-    document.getElementById('teamBName').textContent = data.teamBName;
-    document.getElementById('teamAScore').textContent = data.teamAScore;
-    document.getElementById('teamBScore').textContent = data.teamBScore;
-    document.getElementById('teamAShots').textContent = `Shots: ${data.teamAShots}`;
-    document.getElementById('teamBShots').textContent = `Shots: ${data.teamBShots}`;
-    period = data.Period;
-    timeRemaining = data.TimerSeconds || 20*60;
-    isRunning = data.Running;
+
+    // Update UI
+    document.getElementById('teamAName').textContent = data.teamAName || 'Team A';
+    document.getElementById('teamBName').textContent = data.teamBName || 'Team B';
+    document.getElementById('teamAScore').textContent = data.teamAScore || 0;
+    document.getElementById('teamBScore').textContent = data.teamBScore || 0;
+    document.getElementById('teamAShots').textContent = `Shots: ${data.teamAShots || 0}`;
+    document.getElementById('teamBShots').textContent = `Shots: ${data.teamBShots || 0}`;
+    
+    period = data.Period || 1;
+    timeRemaining = data.TimerSeconds != null ? data.TimerSeconds : 20*60;
+    isRunning = data.Running === true;
+    
     updateTimerDisplay();
     updateStartStopBtn();
-  } catch(err){ console.error(err); }
+  } catch (err) {
+    console.error("Failed to fetch data:", err);
+  }
 }
 
-// Push update to sheet
-async function pushUpdate(payload){
-  try{
+// Push updates to Google Sheet
+async function pushUpdate(payload) {
+  try {
     await fetch(DATA_URL, {
-      method:'POST',
+      method: 'POST',
       body: JSON.stringify(payload),
-      headers:{'Content-Type':'application/json'}
+      headers: { 'Content-Type': 'application/json' }
     });
-    await fetchData(); // refresh
-  } catch(err){ console.error(err); }
+    // Optional: immediately refresh after push
+    fetchData();
+  } catch (err) {
+    console.error("Failed to push update:", err);
+  }
 }
 
-function formatTime(sec){
-  const m = Math.floor(sec/60);
-  const s = sec%60;
+// Timer helpers
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
-
-function updateTimerDisplay(){
+function updateTimerDisplay() {
   document.getElementById('timer').textContent = formatTime(timeRemaining);
   document.getElementById('period').textContent = `Period ${period}`;
 }
-
-function updateStartStopBtn(){
-  const btn=document.getElementById('startStopBtn');
-  btn.textContent = isRunning?'Stop':'Start';
-  btn.style.backgroundColor = isRunning?'#dc3545':'#28a745';
+function updateStartStopBtn() {
+  const btn = document.getElementById('startStopBtn');
+  btn.textContent = isRunning ? 'Stop' : 'Start';
+  btn.style.backgroundColor = isRunning ? '#dc3545' : '#28a745';
 }
 
 // Timer tick
-function tick(){
-  if(isRunning && timeRemaining>0){
+function tick() {
+  if(isRunning && timeRemaining > 0) {
     timeRemaining--;
     updateTimerDisplay();
-    pushUpdate({TimerSeconds: timeRemaining});
+    pushUpdate({ TimerSeconds: timeRemaining });
   }
 }
 
 // Start/Stop
-function toggleClock(){
+function toggleClock() {
   isRunning = !isRunning;
   updateStartStopBtn();
-  pushUpdate({Running: isRunning});
+  pushUpdate({ Running: isRunning });
 }
 
-// Manual Period / Clock set
-function setPeriod(){
-  const val=parseInt(prompt("Enter Period number:"));
-  if(!isNaN(val) && val>0){
-    period=val;
+// Manual period / clock
+function setPeriod() {
+  const val = parseInt(prompt("Enter Period number:"));
+  if(!isNaN(val) && val>0) {
+    period = val;
     updateTimerDisplay();
-    pushUpdate({Period: period});
+    pushUpdate({ Period: period });
   }
 }
-
-function setClock(){
-  const input=prompt("Enter time (MM:SS):");
-  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+function setClock() {
+  const input = prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)) {
     const [m,s] = input.split(':').map(Number);
     timeRemaining = m*60 + s;
     updateTimerDisplay();
-    pushUpdate({TimerSeconds: timeRemaining});
+    pushUpdate({ TimerSeconds: timeRemaining });
   }
 }
 
-// Score/Shot updates
-function updateScore(team, change){
-  const el=document.getElementById(`team${team}Score`);
-  const newVal=Math.max(0,parseInt(el.textContent)+change);
-  el.textContent=newVal;
-  pushUpdate({[`team${team}Score`]: newVal});
+// Score / shot updates
+function updateScore(team, change) {
+  const el = document.getElementById(`team${team}Score`);
+  const newVal = Math.max(0, parseInt(el.textContent) + change);
+  el.textContent = newVal;
+  pushUpdate({ [`team${team}Score`]: newVal });
 }
-function updateShots(team, change){
-  const el=document.getElementById(`team${team}Shots`);
-  const current=parseInt(el.textContent.replace('Shots: ','')||0);
-  const newVal=Math.max(0,current+change);
+function updateShots(team, change) {
+  const el = document.getElementById(`team${team}Shots`);
+  const current = parseInt(el.textContent.replace('Shots: ','')||0);
+  const newVal = Math.max(0, current + change);
   el.textContent = `Shots: ${newVal}`;
-  pushUpdate({[`team${team}Shots`]: newVal});
+  pushUpdate({ [`team${team}Shots`]: newVal });
 }
 
-// Timer loop
+// Initialize
 fetchData();
-setInterval(tick,1000);
-
-// ---- Team selection modal ----
-const modal = document.getElementById('teamModal');
-const teamASelect = document.getElementById('teamASelect');
-const teamBSelect = document.getElementById('teamBSelect');
-const teamACustom = document.getElementById('teamACustom');
-const teamBCustom = document.getElementById('teamBCustom');
-
-async function openSettings(){
-  modal.style.display='flex';
-  // fetch team list from sheet
-  try{
-    const res=await fetch(DATA_URL+'?teamlist=true');
-    const data=await res.json();
-    const teams = data.teamlist||[];
-    [teamASelect,teamBSelect].forEach(select=>{
-      select.innerHTML='';
-      teams.forEach(t=>{
-        const opt=document.createElement('option');
-        opt.value=t;
-        opt.text=t;
-        select.add(opt);
-      });
-      const optCustom=document.createElement('option');
-      optCustom.value='--Custom--';
-      optCustom.text='-- Custom --';
-      select.add(optCustom);
-    });
-    teamASelect.value=document.getElementById('teamAName').textContent;
-    teamBSelect.value=document.getElementById('teamBName').textContent;
-    teamACustom.style.display='none';
-    teamBCustom.style.display='none';
-  } catch(err){ console.error(err); }
-}
-
-teamASelect.addEventListener('change',()=>{ teamACustom.style.display=(teamASelect.value==='--Custom--')?'block':'none'; });
-teamBSelect.addEventListener('change',()=>{ teamBCustom.style.display=(teamBSelect.value==='--Custom--')?'block':'none'; });
-
-function closeModal(){ modal.style.display='none'; }
-
-function updateTeams(){
-  const teamAName = (teamASelect.value==='--Custom--') ? teamACustom.value.trim() : teamASelect.value;
-  const teamBName = (teamBSelect.value==='--Custom--') ? teamBCustom.value.trim() : teamBSelect.value;
-  if(teamAName) pushUpdate({teamAName});
-  if(teamBName) pushUpdate({teamBName});
-  closeModal();
-}
+timerInterval = setInterval(tick, 1000);
 </script>
+
 </body>
 </html>
