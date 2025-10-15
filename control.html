@@ -79,54 +79,130 @@ button {
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbwaUrSiXOROipgs8G_OjsxyNa8g78hTvDTGygqMo-1fP22yBTi323F-Ji7Wu9k_Us12/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbxMpafhRq4aG8M-D8A1oRTxch0DmEFgqiC4prJ5SHA6TKF6pOqrLCwVMkOHcAbqw2Mi/exec";
 
 let data = {};
+let timerInterval;
+let isRunning = false;
+let timeRemaining = 0;
+let period = 1;
 
 async function fetchData() {
   try {
     const res = await fetch(DATA_URL);
     data = await res.json();
-    renderData();
+    updateUI();
   } catch (err) {
-    console.error("Fetch failed:", err);
+    console.error("Fetch error:", err);
   }
 }
 
-function renderData() {
+async function postUpdate(updates) {
+  try {
+    const res = await fetch(DATA_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    const json = await res.json();
+    console.log("Update result:", json);
+  } catch (err) {
+    console.error("Failed to post update:", err);
+  }
+}
+
+function updateUI() {
   document.getElementById('teamAName').textContent = data.teamAName || 'Team A';
   document.getElementById('teamBName').textContent = data.teamBName || 'Team B';
   document.getElementById('teamAScore').textContent = data.teamAScore || 0;
   document.getElementById('teamBScore').textContent = data.teamBScore || 0;
-  document.getElementById('teamAShots').textContent = 'Shots: ' + (data.teamAShots || 0);
-  document.getElementById('teamBShots').textContent = 'Shots: ' + (data.teamBShots || 0);
+  document.getElementById('teamAShots').textContent = "Shots: " + (data.teamAShots || 0);
+  document.getElementById('teamBShots').textContent = "Shots: " + (data.teamBShots || 0);
+  period = parseInt(data.Period || 1);
+  timeRemaining = parseInt(data.TimerSeconds || 1200);
+  updateTimerDisplay();
 }
 
-async function updateValue(key, delta) {
-  // Update local display immediately for responsiveness
-  data[key] = (parseInt(data[key] || 0) + delta);
-  renderData();
+function formatTime(sec){
+  const m = Math.floor(sec/60);
+  const s = sec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 
-  // Push update to Google Sheets
-  try {
-    const res = await fetch(DATA_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [key]: data[key] }),
-      mode: "cors"
-    });
-    const text = await res.text();
-    console.log("Update response:", text);
-  } catch (err) {
-    console.error("POST failed:", err);
+function updateTimerDisplay(){
+  document.getElementById('timer').textContent = formatTime(timeRemaining);
+  document.getElementById('period').textContent = `Period ${period}`;
+}
+
+function toggleClock(){
+  const btn = document.getElementById('startStopBtn');
+  if(isRunning){
+    clearInterval(timerInterval);
+    isRunning = false;
+    btn.textContent='Start';
+    btn.style.backgroundColor='#28a745';
+    postUpdate({ Running: false, TimerSeconds: timeRemaining });
+  } else {
+    isRunning = true;
+    btn.textContent='Stop';
+    btn.style.backgroundColor='#dc3545';
+    postUpdate({ Running: true });
+    timerInterval = setInterval(()=>{
+      if(timeRemaining>0){
+        timeRemaining--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(timerInterval);
+        isRunning=false;
+        postUpdate({ Running: false, TimerSeconds: 0 });
+      }
+    },1000);
   }
 }
 
-// Initial load
-fetchData();
+function setPeriod(){
+  const input=prompt("Enter Period number:");
+  const val=parseInt(input);
+  if(!isNaN(val) && val>0){
+    period=val;
+    postUpdate({ Period: val });
+    updateTimerDisplay();
+  }
+}
 
-// Auto-refresh every 2s (optional)
-setInterval(fetchData, 2000);
+function setClock(){
+  const input=prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s] = input.split(':').map(Number);
+    timeRemaining = m*60 + s;
+    postUpdate({ TimerSeconds: timeRemaining });
+    updateTimerDisplay();
+  }
+}
+
+function updateScore(team, change){
+  const field = team === 'A' ? 'teamAScore' : 'teamBScore';
+  data[field] = Math.max(0, parseInt(data[field]||0) + change);
+  document.getElementById(field).textContent = data[field];
+  postUpdate({ [field]: data[field] });
+}
+
+function updateShots(team, change){
+  const field = team === 'A' ? 'teamAShots' : 'teamBShots';
+  data[field] = Math.max(0, parseInt(data[field]||0) + change);
+  document.getElementById(field).textContent = "Shots: " + data[field];
+  postUpdate({ [field]: data[field] });
+}
+
+function openSettings(){
+  alert("Team selection screen coming soon!");
+}
+
+updateTimerDisplay();
+fetchData();
+setInterval(fetchData, 5000);
 </script>
+
 </body>
 </html>
