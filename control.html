@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Scoreboard Control</title>
 <style>
-  /* General reset */
   * { box-sizing:border-box; }
   body { background:#111; color:#fff; font-family:Arial,sans-serif; font-size:16px; margin:0; padding:10px; display:flex; flex-direction:column; align-items:center; }
 
@@ -100,19 +99,9 @@
 </div>
 
 <script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxZEiV58oPCr-aFCH_zJuvf2nrIzzeP660UtAQoxjJwn_5G8TWYo7D83rFR8FCYOAQu/exec"; // replace with your deployed Apps Script URL
+const webAppUrl = "https://script.google.com/macros/s/AKfycbwShiLdOPkMPI6BR6-NLXlyjb4y8KcKNdcokuFa8iC7EZ1vdMiyl3PzqZrVApmKgDDq/exec"; // <-- replace with your Apps Script URL
 
-let state = {
-  teamAName:"Team A",
-  teamBName:"Team B",
-  teamAScore:0,
-  teamBScore:0,
-  teamAShots:0,
-  teamBShots:0,
-  Period:1,
-  TimerSeconds:1200,
-  Running:false
-};
+let state = {};
 let timerInterval;
 
 // -------------------- INIT --------------------
@@ -120,11 +109,16 @@ async function init() {
   try {
     const resp = await fetch(webAppUrl);
     const data = await resp.json();
-    Object.assign(state, data);
+    state = data;
+    // Ensure numbers
+    ['teamAScore','teamBScore','teamAShots','teamBShots','Period','TimerSeconds'].forEach(k=>{
+      state[k] = Number(state[k]) || 0;
+    });
+    state.Running = !!state.Running;
     updateUI();
     startTimerInterval();
-  } catch(e) {
-    console.error("Failed to fetch initial data:", e);
+  } catch(e){
+    console.error("Failed to initialize:", e);
   }
 }
 
@@ -133,8 +127,8 @@ function updateUI() {
   document.getElementById('teamBName').textContent = state.teamBName;
   document.getElementById('teamAScore').textContent = state.teamAScore;
   document.getElementById('teamBScore').textContent = state.teamBScore;
-  document.getElementById('teamAShots').textContent = 'Shots: ' + state.teamAShots;
-  document.getElementById('teamBShots').textContent = 'Shots: ' + state.teamBShots;
+  document.getElementById('teamAShots').textContent = 'Shots: '+state.teamAShots;
+  document.getElementById('teamBShots').textContent = 'Shots: '+state.teamBShots;
   document.getElementById('period').textContent = `Period ${state.Period}`;
   document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
   const btn = document.getElementById('startStopBtn');
@@ -144,7 +138,7 @@ function updateUI() {
 
 // -------------------- TIMER --------------------
 function formatTime(sec){
-  const m = Math.floor(sec/60), s=sec%60;
+  const m = Math.floor(sec/60), s = sec%60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
@@ -154,7 +148,6 @@ function startTimerInterval(){
     if(state.Running && state.TimerSeconds>0){
       state.TimerSeconds--;
       document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
-      // push every 5s
       if(state.TimerSeconds % 5 === 0) pushUpdate('TimerSeconds', state.TimerSeconds);
     }
   },1000);
@@ -202,10 +195,13 @@ function updateShots(team, change){
 
 // -------------------- PUSH --------------------
 async function pushUpdate(field, value){
-  try {
+  try{
     const url = `${webAppUrl}?field=${encodeURIComponent(field)}&value=${encodeURIComponent(value)}`;
-    await fetch(url);
-  } catch(e){ console.error("Failed to push update:", e); }
+    const resp = await fetch(url);
+    if(!resp.ok) console.error("Failed to push update", resp.status);
+  } catch(e){
+    console.error("Error pushing update:", e);
+  }
 }
 
 // -------------------- SETTINGS --------------------
@@ -237,7 +233,7 @@ function updateTeam(team){
   updateUI();
   pushUpdate(key,name);
 }
-  
+
 init();
 </script>
 </body>
