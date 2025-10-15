@@ -145,13 +145,13 @@ body {
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbwx0ma1bFNTAULNN6ljZcrK_aKUNkvI5hbwrfrKwTL-gJ-K8TiXFG3BT3xf-EED1kIf/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbzevN6h6-3JL41QP2bcnKPvrDyYsbRBB4Y033NDeBnKMSBsYBHXK3YRKWx7HcmkxkMu/exec";
 
 let timerSeconds = 20*60; 
 let running = false;
 let period = 1;
-let lastRunning = null;
 
+// Fetch data from Google Apps Script web app
 async function refresh() {
   try {
     const res = await fetch(DATA_URL);
@@ -171,18 +171,17 @@ async function refresh() {
     document.getElementById("scoreB").innerText = data.teamBScore;
 
     period = data.Period;
-
-    // Only update timer if running boolean changed
-    if (lastRunning === null || lastRunning !== data.Running) {
-      lastRunning = data.Running;
-      running = data.Running;
-      timerSeconds = parseInt(data.TimerSeconds || 20*60);
+    running = data.Running === true || data.Running === "TRUE";
+    if(!running){
+      const [m,s] = (data.TimerSeconds || 1200);
+      timerSeconds = parseInt(data.TimerSeconds) || m*60 + (s||0);
     }
   } catch (err) {
     console.error("Failed to fetch scoreboard data:", err);
   }
 }
 
+// Update period-clock display
 function updateClockDisplay() {
   const min = Math.floor(timerSeconds/60);
   const sec = timerSeconds % 60;
@@ -190,16 +189,14 @@ function updateClockDisplay() {
     `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
 }
 
-// Tick every second if running
+// Tick the clock if running
 setInterval(()=>{
   if(running && timerSeconds>0) timerSeconds--;
   updateClockDisplay();
 }, 1000);
 
-// Refresh data every 2s
-setInterval(refresh, 1000);
-
-// Initial load
+// Refresh from sheet every 1.5s
+setInterval(refresh, 1500);
 refresh();
 </script>
 </body>
