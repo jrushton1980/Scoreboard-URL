@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Scoreboard Control</title>
 <style>
   body {
@@ -15,8 +15,6 @@
     flex-direction: column;
     align-items: center;
   }
-
-  /* Top scoreboard */
   .scoreboard {
     width: 95%;
     background: #1e1e1e;
@@ -44,8 +42,6 @@
     margin-top: 4px;
     opacity: 0.85;
   }
-
-  /* Clock + Period */
   .clock-section {
     display: flex;
     justify-content: space-between;
@@ -77,8 +73,6 @@
     text-align: center;
     margin-top: 2px;
   }
-
-  /* Start/Stop */
   #startStopBtn {
     width: 95%;
     font-size: 28px;
@@ -89,8 +83,6 @@
     background-color: #28a745;
     margin-bottom: 16px;
   }
-
-  /* Team controls */
   .team-controls {
     display: flex;
     justify-content: space-between;
@@ -121,13 +113,11 @@
     background-color: #777;
     color: #fff;
   }
-
-  /* Settings icon */
   .settings-btn {
-    position: absolute;
+    position: fixed;
     top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 50%;
+    transform: translateX(50%);
     background: none;
     border: none;
     color: #fff;
@@ -139,7 +129,6 @@
 <body>
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
-<!-- Top scoreboard -->
 <div class="scoreboard">
   <div class="team-row">
     <span id="teamAName">Team A</span>
@@ -156,7 +145,6 @@
   </div>
 </div>
 
-<!-- Clock + Period -->
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
   <div style="flex:2;">
@@ -166,20 +154,15 @@
   <button onclick="setClock()">Clock</button>
 </div>
 
-<!-- Start/Stop -->
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
 
-<!-- Team Controls -->
 <div class="team-controls">
-  <!-- Team A -->
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
   </div>
-
-  <!-- Team B -->
   <div class="team-column">
     <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
@@ -191,127 +174,97 @@
 <script>
 const DATA_URL = "https://script.google.com/macros/s/AKfycbztgl-q8BQ7XVmR664a0gvwhMr2hrnuAqbSPBvj_WHKDFA-jMyJ17qPa-B_PbeVtC3e/exec";
 
-let timerInterval;
-let isRunning = false;
 let timeRemaining = 20 * 60;
 let period = 1;
+let isRunning = false;
 
-function formatTime(sec){
+function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-
-function updateTimerDisplay(){
-  document.getElementById('timer').textContent = formatTime(timeRemaining);
-  document.getElementById('period').textContent = `Period ${period}`;
+function updateTimerDisplay() {
+  document.getElementById("timer").textContent = formatTime(timeRemaining);
+  document.getElementById("period").textContent = `Period ${period}`;
 }
-
-function toggleClock(){
-  const btn = document.getElementById('startStopBtn');
-  if(isRunning){
-    clearInterval(timerInterval);
-    isRunning = false;
-    btn.textContent = 'Start';
-    btn.style.backgroundColor = '#28a745';
-    pushUpdate({ Running: false, TimerSeconds: timeRemaining });
-  } else {
-    isRunning = true;
-    btn.textContent = 'Stop';
-    btn.style.backgroundColor = '#dc3545';
-    pushUpdate({ Running: true, TimerSeconds: timeRemaining });
-    timerInterval = setInterval(() => {
-      if(timeRemaining > 0){
-        timeRemaining--;
-        updateTimerDisplay();
-      } else {
-        clearInterval(timerInterval);
-        isRunning = false;
-        btn.textContent = 'Start';
-        btn.style.backgroundColor = '#28a745';
-        pushUpdate({ Running: false, TimerSeconds: 0 });
-      }
-    }, 1000);
-  }
-}
-
-function setPeriod(){
+function setPeriod() {
   const input = prompt("Enter Period number:");
   const val = parseInt(input);
-  if(!isNaN(val) && val > 0){
+  if (!isNaN(val) && val > 0) {
     period = val;
     updateTimerDisplay();
     pushUpdate({ Period: period });
   }
 }
-
-function setClock(){
+function setClock() {
   const input = prompt("Enter time (MM:SS):");
-  if(input && /^\d{1,2}:\d{2}$/.test(input)){
-    const [m,s] = input.split(':').map(Number);
-    timeRemaining = m*60 + s;
+  if (input && /^\d{1,2}:\d{2}$/.test(input)) {
+    const [m, s] = input.split(":").map(Number);
+    timeRemaining = m * 60 + s;
     updateTimerDisplay();
     pushUpdate({ TimerSeconds: timeRemaining });
   }
 }
-
-function updateScore(team, change){
+function toggleClock() {
+  isRunning = !isRunning;
+  document.getElementById("startStopBtn").textContent = isRunning ? "Stop" : "Start";
+  document.getElementById("startStopBtn").style.backgroundColor = isRunning ? "#dc3545" : "#28a745";
+  pushUpdate({ Running: isRunning });
+}
+function updateScore(team, change) {
   const el = document.getElementById(`team${team}Score`);
-  const newVal = Math.max(0, parseInt(el.textContent) + change);
+  let newVal = Math.max(0, parseInt(el.textContent) + change);
   el.textContent = newVal;
   pushUpdate({ [`team${team}Score`]: newVal });
 }
-
-function updateShots(team, change){
+function updateShots(team, change) {
   const el = document.getElementById(`team${team}Shots`);
-  const current = parseInt(el.textContent.replace('Shots: ', '')) || 0;
+  const current = parseInt(el.textContent.replace("Shots: ", "")) || 0;
   const newVal = Math.max(0, current + change);
   el.textContent = `Shots: ${newVal}`;
   pushUpdate({ [`team${team}Shots`]: newVal });
 }
-
-async function fetchData(){
-  try {
-    const res = await fetch(DATA_URL);
-    const data = await res.json();
-    console.log("Loaded data:", data);
-
-    if(data.teamAName) document.getElementById('teamAName').textContent = data.teamAName;
-    if(data.teamBName) document.getElementById('teamBName').textContent = data.teamBName;
-    if(data.teamAScore) document.getElementById('teamAScore').textContent = data.teamAScore;
-    if(data.teamBScore) document.getElementById('teamBScore').textContent = data.teamBScore;
-    if(data.teamAShots) document.getElementById('teamAShots').textContent = `Shots: ${data.teamAShots}`;
-    if(data.teamBShots) document.getElementById('teamBShots').textContent = `Shots: ${data.teamBShots}`;
-    if(data.Period) period = parseInt(data.Period);
-    if(data.TimerSeconds) timeRemaining = parseInt(data.TimerSeconds);
-    updateTimerDisplay();
-  } catch (err) {
-    console.error("Error fetching data:", err);
-  }
-}
-
-async function pushUpdate(payload){
-  console.log("Posting to Google Apps Script:", payload);
-  try {
-    const res = await fetch(DATA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const text = await res.text();
-    console.log("Response:", text);
-  } catch (err) {
-    console.error("Error posting:", err);
-    alert("⚠️ Failed to post update — check console");
-  }
-}
-
-function openSettings(){
+function openSettings() {
   alert("Team selection screen coming soon!");
 }
 
+async function fetchData() {
+  try {
+    const res = await fetch(DATA_URL);
+    const data = await res.json();
+    document.getElementById("teamAName").textContent = data.teamAName || "Team A";
+    document.getElementById("teamBName").textContent = data.teamBName || "Team B";
+    document.getElementById("teamAScore").textContent = data.teamAScore || 0;
+    document.getElementById("teamBScore").textContent = data.teamBScore || 0;
+    document.getElementById("teamAShots").textContent = `Shots: ${data.teamAShots || 0}`;
+    document.getElementById("teamBShots").textContent = `Shots: ${data.teamBShots || 0}`;
+    period = parseInt(data.Period || 1);
+    timeRemaining = parseInt(data.TimerSeconds || 1200);
+    isRunning = data.Running === true || data.Running === "true";
+    updateTimerDisplay();
+    document.getElementById("startStopBtn").textContent = isRunning ? "Stop" : "Start";
+    document.getElementById("startStopBtn").style.backgroundColor = isRunning ? "#dc3545" : "#28a745";
+  } catch (err) {
+    console.error("Failed to fetch data:", err);
+  }
+}
+
+async function pushUpdate(payload) {
+  try {
+    const res = await fetch(DATA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const text = await res.text();
+    console.log("Push response:", text);
+  } catch (err) {
+    console.error("Failed to post update:", err);
+  }
+}
+
 fetchData();
-updateTimerDisplay();
+setInterval(fetchData, 5000);
 </script>
 </body>
 </html>
