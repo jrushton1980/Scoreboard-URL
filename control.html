@@ -1,270 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoreboard Control</title>
 <style>
-  body {
-    background-color: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .scoreboard {
-    width: 95%;
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .team-row {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 18px;
-  }
-  .score-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 36px;
-    margin-top: 6px;
-  }
-  .shots-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-    margin-top: 4px;
-    opacity: 0.85;
-  }
-  .clock-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 95%;
-    background: #1d1d1d;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-  }
-  .clock-section button {
-    flex: 1;
-    font-size: 18px;
-    padding: 14px 0;
-    margin: 0 4px;
-    border-radius: 8px;
-    border: none;
-    background-color: #333;
-    color: #fff;
-    cursor: pointer;
-  }
-  #timer {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: center;
-  }
-  #period {
-    font-size: 18px;
-    text-align: center;
-    margin-top: 2px;
-  }
-  #startStopBtn {
-    width: 95%;
-    font-size: 28px;
-    padding: 40px 0;
-    border-radius: 12px;
-    border: none;
-    color: white;
-    background-color: #28a745;
-    margin-bottom: 16px;
-  }
-  .team-controls {
-    display: flex;
-    justify-content: space-between;
-    width: 95%;
-    gap: 10px;
-  }
-  .team-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .team-column button.plus {
-    width: 100%;
-    font-size: 24px;
-    padding: 40px 0;
-    border-radius: 10px;
-    border: none;
-    background-color: #555;
-    color: #fff;
-  }
-  .team-column button.minus {
-    width: 100%;
-    font-size: 24px;
-    padding: 12px 0;
-    border-radius: 10px;
-    border: none;
-    background-color: #777;
-    color: #fff;
-  }
-  .settings-btn {
-    position: fixed;
-    top: 10px;
-    right: 50%;
-    transform: translateX(50%);
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 28px;
-    cursor: pointer;
-  }
+body {
+  background-color: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+h2 {
+  margin: 5px 0;
+}
+.score {
+  font-size: 48px;
+  font-weight: bold;
+}
+.shots {
+  font-size: 20px;
+  color: #aaa;
+}
+button {
+  font-size: 18px;
+  padding: 8px 14px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+.refresh-btn {
+  background: none;
+  color: #fff;
+  border: 1px solid #555;
+  font-size: 26px;
+  border-radius: 50%;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.team-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+.team-box {
+  background-color: #222;
+  padding: 20px;
+  border-radius: 15px;
+  width: 45%;
+}
 </style>
 </head>
 <body>
-<button class="settings-btn" onclick="openSettings()">⚙️</button>
 
-<div class="scoreboard">
-  <div class="team-row">
-    <span id="teamAName">Team A</span>
-    <span id="teamBName">Team B</span>
-  </div>
-  <div class="score-row">
-    <span id="teamAScore">0</span>
-    <span style="opacity:0.8;">-</span>
-    <span id="teamBScore">0</span>
-  </div>
-  <div class="shots-row">
-    <span id="teamAShots">Shots: 0</span>
-    <span id="teamBShots">Shots: 0</span>
-  </div>
-</div>
+<button class="refresh-btn" onclick="fetchData()">⟳</button>
 
-<div class="clock-section">
-  <button onclick="setPeriod()">Period</button>
-  <div style="flex:2;">
-    <div id="timer">20:00</div>
-    <div id="period">Period 1</div>
+<div class="team-container">
+  <div class="team-box">
+    <h2 id="teamAName">Team A</h2>
+    <div class="score" id="teamAScore">0</div>
+    <div class="shots" id="teamAShots">Shots: 0</div>
+    <button onclick="updateValue('teamAScore', 1)">+1 Goal</button>
+    <button onclick="updateValue('teamAShots', 1)">+1 Shot</button>
   </div>
-  <button onclick="setClock()">Clock</button>
-</div>
 
-<button id="startStopBtn" onclick="toggleClock()">Start</button>
-
-<div class="team-controls">
-  <div class="team-column">
-    <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
-    <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
-    <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
-  </div>
-  <div class="team-column">
-    <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
-    <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
-    <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
+  <div class="team-box">
+    <h2 id="teamBName">Team B</h2>
+    <div class="score" id="teamBScore">0</div>
+    <div class="shots" id="teamBShots">Shots: 0</div>
+    <button onclick="updateValue('teamBScore', 1)">+1 Goal</button>
+    <button onclick="updateValue('teamBShots', 1)">+1 Shot</button>
   </div>
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbztgl-q8BQ7XVmR664a0gvwhMr2hrnuAqbSPBvj_WHKDFA-jMyJ17qPa-B_PbeVtC3e/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbzkgC1LCqNNPao4ybgmPbPUbLDJ2Rvz6h_7XiDeUl_-puNOLSk2Lao8d11F8u2zYXb8/exec";
 
-let timeRemaining = 20 * 60;
-let period = 1;
-let isRunning = false;
-
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-function updateTimerDisplay() {
-  document.getElementById("timer").textContent = formatTime(timeRemaining);
-  document.getElementById("period").textContent = `Period ${period}`;
-}
-function setPeriod() {
-  const input = prompt("Enter Period number:");
-  const val = parseInt(input);
-  if (!isNaN(val) && val > 0) {
-    period = val;
-    updateTimerDisplay();
-    pushUpdate({ Period: period });
-  }
-}
-function setClock() {
-  const input = prompt("Enter time (MM:SS):");
-  if (input && /^\d{1,2}:\d{2}$/.test(input)) {
-    const [m, s] = input.split(":").map(Number);
-    timeRemaining = m * 60 + s;
-    updateTimerDisplay();
-    pushUpdate({ TimerSeconds: timeRemaining });
-  }
-}
-function toggleClock() {
-  isRunning = !isRunning;
-  document.getElementById("startStopBtn").textContent = isRunning ? "Stop" : "Start";
-  document.getElementById("startStopBtn").style.backgroundColor = isRunning ? "#dc3545" : "#28a745";
-  pushUpdate({ Running: isRunning });
-}
-function updateScore(team, change) {
-  const el = document.getElementById(`team${team}Score`);
-  let newVal = Math.max(0, parseInt(el.textContent) + change);
-  el.textContent = newVal;
-  pushUpdate({ [`team${team}Score`]: newVal });
-}
-function updateShots(team, change) {
-  const el = document.getElementById(`team${team}Shots`);
-  const current = parseInt(el.textContent.replace("Shots: ", "")) || 0;
-  const newVal = Math.max(0, current + change);
-  el.textContent = `Shots: ${newVal}`;
-  pushUpdate({ [`team${team}Shots`]: newVal });
-}
-function openSettings() {
-  alert("Team selection screen coming soon!");
-}
+let data = {};
 
 async function fetchData() {
   try {
     const res = await fetch(DATA_URL);
-    const data = await res.json();
-    document.getElementById("teamAName").textContent = data.teamAName || "Team A";
-    document.getElementById("teamBName").textContent = data.teamBName || "Team B";
-    document.getElementById("teamAScore").textContent = data.teamAScore || 0;
-    document.getElementById("teamBScore").textContent = data.teamBScore || 0;
-    document.getElementById("teamAShots").textContent = `Shots: ${data.teamAShots || 0}`;
-    document.getElementById("teamBShots").textContent = `Shots: ${data.teamBShots || 0}`;
-    period = parseInt(data.Period || 1);
-    timeRemaining = parseInt(data.TimerSeconds || 1200);
-    isRunning = data.Running === true || data.Running === "true";
-    updateTimerDisplay();
-    document.getElementById("startStopBtn").textContent = isRunning ? "Stop" : "Start";
-    document.getElementById("startStopBtn").style.backgroundColor = isRunning ? "#dc3545" : "#28a745";
+    data = await res.json();
+    renderData();
   } catch (err) {
-    console.error("Failed to fetch data:", err);
+    console.error("Fetch failed:", err);
   }
 }
 
-async function pushUpdate(payload) {
+function renderData() {
+  document.getElementById('teamAName').textContent = data.teamAName || 'Team A';
+  document.getElementById('teamBName').textContent = data.teamBName || 'Team B';
+  document.getElementById('teamAScore').textContent = data.teamAScore || 0;
+  document.getElementById('teamBScore').textContent = data.teamBScore || 0;
+  document.getElementById('teamAShots').textContent = 'Shots: ' + (data.teamAShots || 0);
+  document.getElementById('teamBShots').textContent = 'Shots: ' + (data.teamBShots || 0);
+}
+
+async function updateValue(key, delta) {
+  // Update local display immediately for responsiveness
+  data[key] = (parseInt(data[key] || 0) + delta);
+  renderData();
+
+  // Push update to Google Sheets
   try {
     const res = await fetch(DATA_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ [key]: data[key] }),
+      mode: "cors"
     });
     const text = await res.text();
-    console.log("Push response:", text);
+    console.log("Update response:", text);
   } catch (err) {
-    console.error("Failed to post update:", err);
+    console.error("POST failed:", err);
   }
 }
 
+// Initial load
 fetchData();
-setInterval(fetchData, 5000);
+
+// Auto-refresh every 2s (optional)
+setInterval(fetchData, 2000);
 </script>
 </body>
 </html>
