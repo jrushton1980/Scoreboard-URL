@@ -2,207 +2,95 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Scoreboard Overlay</title>
 <style>
-:root {
-  --font-team-name: 'Arial', sans-serif;
-  --font-team-name-size: 22px;
-
-  --font-shots: 'Arial', sans-serif;
-  --font-shots-size: 16px;
-
-  --font-score: 'Arial', sans-serif;
-  --font-score-size: 40px;
-
-  --font-vs-size: 32px;
-
-  --font-period: 'Arial', sans-serif;
-  --font-period-size: 16px;
-}
-
-body { 
-  margin:0; padding:0; 
-  font-family: var(--font-team-name); 
-  background: transparent; 
-  display:flex; flex-direction: column; align-items:center; 
-}
-
-.scoreboard-wrapper { 
-  position: relative; 
-  display:flex; 
-  justify-content:center; 
-  align-items:center; 
-  margin-top:40px; 
-}
-
-.team-card { 
-  display:flex; 
-  align-items:center; 
-  justify-content:space-between; 
-  width:260px; 
-  height:55px; 
-  background: rgba(0,0,0,0.7);
-  border-radius:15px; 
-  padding:10px 15px; 
-  z-index:1; 
-}
-
-.team-info { 
-  display:flex; 
-  flex-direction:column; 
-  justify-content:center; 
-  flex-grow:1; 
-  margin-left:10px; 
-}
-
-.team-logo { 
-  width:60px; 
-  height:60px; 
-  border-radius:50%; 
-  object-fit:cover; 
-  border:2px solid #fff; 
-}
-
-.team-name { 
-  font-family: var(--font-team-name); 
-  font-size: var(--font-team-name-size); 
-  font-weight:bold; 
-  color:#fff; 
-}
-
-.shots { 
-  font-family: var(--font-shots); 
-  font-size: var(--font-shots-size); 
-  color:#fff; 
-}
-
-.central-score { 
-  position:absolute; 
-  font-family: var(--font-score); 
-  font-weight:bold; 
-  font-size: var(--font-score-size); 
-  background:rgba(0,0,0,0.7); 
-  padding:15px 15px; 
-  border-radius:20px; 
-  box-shadow:0 0 20px rgba(0,0,0,0.5); 
-  z-index:2; 
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
-  justify-content:center; 
-}
-
-.score-row { 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  color:#fff; 
-}
-
-.vs { 
-  font-size: var(--font-vs-size); 
-  margin:0 10px; 
-  color:#fff; 
-}
-
-.period-clock { 
-  font-family: var(--font-period); 
-  font-size: var(--font-period-size); 
-  font-weight:normal; 
-  margin-top:5px; 
-  color:#fff; 
-}
-
-#teamAcard { margin-right:70px; }
-#teamBcard { margin-left:70px; }
+body { background: transparent; color: white; font-family: Arial, sans-serif; }
+.row { display:flex; justify-content:space-between; width:100%; max-width:900px; margin:10px auto; }
+.team { font-size:28px; font-weight:bold; }
+.score { font-size:48px; }
+#clock { font-size:36px; }
 </style>
 </head>
 <body>
-<div class="scoreboard-wrapper">
-  <div class="team-card" id="teamAcard">
-    <img class="team-logo" id="teamALogo">
-    <div class="team-info">
-      <div class="team-name" id="teamAName"></div>
-      <div class="shots" id="teamAShots"></div>
-    </div>
-  </div>
 
-  <div class="central-score">
-    <div class="score-row">
-      <span id="scoreA">0</span>
-      <span class="vs">-</span>
-      <span id="scoreB">0</span>
-    </div>
-    <div class="period-clock" id="periodClock">20:00 | Per 1</div>
-  </div>
-
-  <div class="team-card" id="teamBcard">
-    <img class="team-logo" id="teamBLogo">
-    <div class="team-info">
-      <div class="team-name" id="teamBName"></div>
-      <div class="shots" id="teamBShots"></div>
-    </div>
-  </div>
+<div class="row">
+  <div class="team" id="tA">Team A</div>
+  <div class="score" id="sA">0</div>
+  <div id="clock">20:00</div>
+  <div class="score" id="sB">0</div>
+  <div class="team" id="tB">Team B</div>
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec"; // Replace with your Apps Script URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec"; // replace with your web app URL
 
-let timerSeconds = 20*60;
-let running = false;
-let period = 1;
-let lastRunningState = false; // to detect changes
+let overlayState = {
+  teamAName: '', teamBName: '', teamAScore: 0, teamBScore: 0,
+  teamAShots: 0, teamBShots: 0, Period: 1, TimerSeconds: 1200, Running: false
+};
 
-// Fetch data from Google Apps Script
-async function refresh() {
-  try {
-    const res = await fetch(DATA_URL);
-    const data = await res.json();
+let overlayTimerInterval = null;
+let lastRunning = null;
 
-    document.getElementById("teamALogo").src = data.teamALogo;
-    document.getElementById("teamAName").innerText = data.teamAName;
-    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
-    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
+function formatTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 
-    document.getElementById("teamBLogo").src = data.teamBLogo;
-    document.getElementById("teamBName").innerText = data.teamBName;
-    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
-    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
+function applyState(data){
+  // Update team names, scores, shots
+  document.getElementById('tA').textContent = data.teamAName;
+  document.getElementById('tB').textContent = data.teamBName;
+  document.getElementById('sA').textContent = data.teamAScore;
+  document.getElementById('sB').textContent = data.teamBScore;
 
-    document.getElementById("scoreA").innerText = data.teamAScore;
-    document.getElementById("scoreB").innerText = data.teamBScore;
+  // Only update timer if Running changes
+  if(lastRunning === null || lastRunning !== data.Running){
+    overlayState.TimerSeconds = Number(data.TimerSeconds) || 0;
+    document.getElementById('clock').textContent = formatTime(overlayState.TimerSeconds);
+    lastRunning = data.Running;
+  }
 
-    period = data.Period;
-
-    // Check if Running state changed
-    const newRunning = (data.Running === true || data.Running === "TRUE");
-    if(newRunning !== lastRunningState){
-      // Update timerSeconds only when Running state changes
-      timerSeconds = parseInt(data.TimerSeconds) || 1200;
-      running = newRunning;
-      lastRunningState = newRunning;
-    }
-  } catch (err) {
-    console.error("Failed to fetch scoreboard data:", err);
+  // Start/stop clock locally
+  if(data.Running && overlayTimerInterval === null){
+    overlayTimerInterval = setInterval(()=>{
+      if(overlayState.TimerSeconds>0){
+        overlayState.TimerSeconds--;
+        document.getElementById('clock').textContent = formatTime(overlayState.TimerSeconds);
+      }
+    },1000);
+  } else if(!data.Running && overlayTimerInterval !== null){
+    clearInterval(overlayTimerInterval);
+    overlayTimerInterval = null;
   }
 }
 
-// Update period-clock display
-function updateClockDisplay() {
-  const min = Math.floor(timerSeconds/60);
-  const sec = timerSeconds % 60;
-  document.getElementById("periodClock").innerText = 
-    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
+async function fetchState(){
+  try{
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+
+    overlayState.teamAName = data.teamAName;
+    overlayState.teamBName = data.teamBName;
+    overlayState.teamAScore = Number(data.teamAScore)||0;
+    overlayState.teamBScore = Number(data.teamBScore)||0;
+    overlayState.teamAShots = Number(data.teamAShots)||0;
+    overlayState.teamBShots = Number(data.teamBShots)||0;
+    overlayState.Period = data.Period;
+    overlayState.Running = !!data.Running;
+    overlayState.TimerSeconds = Number(data.TimerSeconds) || 0;
+
+    applyState(data);
+  } catch(e){
+    console.error('fetchState error:', e);
+  }
 }
 
-// Tick the clock if running
-setInterval(()=>{
-  if(running && timerSeconds>0) timerSeconds--;
-  updateClockDisplay();
-}, 1000);
+// Poll every 0.5s
+setInterval(fetchState, 500);
+fetchState();
 
-// Poll Google Sheets every 0.5s
-setInterval(refresh, 500);
-refresh();
 </script>
 </body>
 </html>
