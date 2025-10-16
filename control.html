@@ -384,32 +384,18 @@ function closeSettings(){
   document.getElementById("settingsModal").style.display = "none";
 }
 
-async function loadTeamList(){
+async function loadTeamList() {
   try {
     const res = await fetch(`${SCRIPT_URL}?list=true`);
     const list = await res.json();
-    const ddA = document.getElementById("teamADropdown");
-    const ddB = document.getElementById("teamBDropdown");
-    [ddA, ddB].forEach(dd => {
-      dd.innerHTML = "";
-      const optCustom = document.createElement("option");
-      optCustom.value = "-- Custom --";
-      optCustom.textContent = "-- Custom --";
-      dd.appendChild(optCustom);
-      list.forEach(team => {
-        const opt = document.createElement("option");
-        opt.value = team;
-        opt.textContent = team;
-        dd.appendChild(opt);
-      });
-    });
-    // Set dropdowns to current state
-    ddA.value = state.teamAName || "-- Custom --";
-    ddB.value = state.teamBName || "-- Custom --";
-    handleDropdownChange('A');
-    handleDropdownChange('B');
-  } catch(e){ console.error("Load team list error:", e); }
+    console.log("teamlist from Sheets:", list); // <-- check the browser console
+    alert("Check console for teamlist output");
+  } catch (err) {
+    console.error("Error loading teamlist:", err);
+    alert("Failed to load teamlist. See console.");
+  }
 }
+
 
 function handleDropdownChange(team){
   const dd = document.getElementById(`team${team}Dropdown`);
