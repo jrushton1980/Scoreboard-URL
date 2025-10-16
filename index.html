@@ -145,13 +145,14 @@ body {
 </div>
 
 <script>
-const DATA_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec"; // Replace with your Apps Script URL
 
-let timerSeconds = 20*60; 
+let timerSeconds = 20*60;
 let running = false;
 let period = 1;
+let lastRunningState = false; // to detect changes
 
-// Fetch data from Google Apps Script web app
+// Fetch data from Google Apps Script
 async function refresh() {
   try {
     const res = await fetch(DATA_URL);
@@ -171,10 +172,14 @@ async function refresh() {
     document.getElementById("scoreB").innerText = data.teamBScore;
 
     period = data.Period;
-    running = data.Running === true || data.Running === "TRUE";
-    if(!running){
-      const [m,s] = (data.TimerSeconds || 1200);
-      timerSeconds = parseInt(data.TimerSeconds) || m*60 + (s||0);
+
+    // Check if Running state changed
+    const newRunning = (data.Running === true || data.Running === "TRUE");
+    if(newRunning !== lastRunningState){
+      // Update timerSeconds only when Running state changes
+      timerSeconds = parseInt(data.TimerSeconds) || 1200;
+      running = newRunning;
+      lastRunningState = newRunning;
     }
   } catch (err) {
     console.error("Failed to fetch scoreboard data:", err);
@@ -195,8 +200,8 @@ setInterval(()=>{
   updateClockDisplay();
 }, 1000);
 
-// Refresh from sheet every 1.5s
-setInterval(refresh, 1500);
+// Poll Google Sheets every 0.5s
+setInterval(refresh, 500);
 refresh();
 </script>
 </body>
