@@ -154,6 +154,7 @@
   }
   .modal h2 {
     margin-bottom: 20px;
+    text-align: center;
   }
   .modal-section {
     display: flex;
@@ -162,14 +163,19 @@
   }
   .team-setup {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
   select, input {
     width: 100%;
     padding: 8px;
-    margin-top: 6px;
     border-radius: 6px;
     border: none;
-    font-size:16px;
+  }
+  input:disabled {
+    background-color: #555;
+    color: #ccc;
   }
   .modal-buttons {
     margin-top: 20px;
@@ -250,12 +256,12 @@
       <div class="team-setup">
         <h3>Team A</h3>
         <select id="teamADropdown" onchange="handleDropdownChange('A')"></select>
-        <input id="teamACustom" type="text" placeholder="Custom team name">
+        <input id="teamACustom" type="text" placeholder="Custom name" disabled>
       </div>
       <div class="team-setup">
         <h3>Team B</h3>
         <select id="teamBDropdown" onchange="handleDropdownChange('B')"></select>
-        <input id="teamBCustom" type="text" placeholder="Custom team name">
+        <input id="teamBCustom" type="text" placeholder="Custom name" disabled>
       </div>
     </div>
     <div class="modal-buttons">
@@ -266,15 +272,20 @@
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec"; // Replace
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzch9SYxZbzoGwZm3rlgzDPmZes1mjFD0GWJrzTzuF-ndvH51lLW7HGTOZXfh0NdY_K/exec"; // Replace with your Apps Script /exec URL
 
 let state = {
-  teamAName:"Team A", teamAScore:0, teamAShots:0,
-  teamBName:"Team B", teamBScore:0, teamBShots:0,
-  Period:1, TimerSeconds:1200, Running:false
+  teamAName: "Team A",
+  teamAScore: 0,
+  teamAShots: 0,
+  teamBName: "Team B",
+  teamBScore: 0,
+  teamBShots: 0,
+  Period: 1,
+  TimerSeconds: 1200,
+  Running: false
 };
 let timerInterval;
-let timerPushInterval;
 
 async function init() {
   try {
@@ -284,9 +295,7 @@ async function init() {
     updateUI();
     await loadTeamList();
     if(state.Running) startTimer();
-  } catch(e) {
-    console.error("Init error:", e);
-  }
+  } catch(e) { console.error("Init error:", e); }
 }
 
 function updateUI(){
@@ -310,30 +319,23 @@ function formatTime(sec){
 
 function toggleClock(){
   state.Running = !state.Running;
-  if(state.Running) startTimer(); else stopTimer();
+  state.Running ? startTimer() : stopTimer();
   updateUI();
   pushUpdate("Running", state.Running);
 }
 
 function startTimer(){
   if(timerInterval) clearInterval(timerInterval);
-  if(timerPushInterval) clearInterval(timerPushInterval);
-
   timerInterval = setInterval(()=>{
-    if(state.TimerSeconds>0) {
+    if(state.TimerSeconds > 0){
       state.TimerSeconds--;
       document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
     }
   },1000);
-
-  timerPushInterval = setInterval(()=>{
-    pushUpdate("TimerSeconds", state.TimerSeconds);
-  },5000);
 }
 
 function stopTimer(){
   clearInterval(timerInterval);
-  clearInterval(timerPushInterval);
 }
 
 function setClock(){
@@ -358,75 +360,77 @@ function setPeriod(){
 
 function updateScore(team, change){
   const key = team === "A" ? "teamAScore" : "teamBScore";
-  state[key] = Math.max(0, state[key]+change);
+  state[key] = Math.max(0, state[key] + change);
   updateUI();
   pushUpdate(key, state[key]);
 }
 
 function updateShots(team, change){
   const key = team === "A" ? "teamAShots" : "teamBShots";
-  state[key] = Math.max(0, state[key]+change);
+  state[key] = Math.max(0, state[key] + change);
   updateUI();
   pushUpdate(key, state[key]);
 }
 
 async function pushUpdate(field, value){
-  try{
-    await fetch(`${SCRIPT_URL}?field=${field}&value=${encodeURIComponent(value)}`);
-  } catch(e){
-    console.error("Push update failed:", e);
-  }
+  await fetch(`${SCRIPT_URL}?field=${field}&value=${encodeURIComponent(value)}`);
 }
 
-// Modal handlers
-function openSettings(){ document.getElementById("settingsModal").style.display="flex"; }
-function closeSettings(){ document.getElementById("settingsModal").style.display="none"; }
+function openSettings(){
+  document.getElementById("settingsModal").style.display = "flex";
+}
+
+function closeSettings(){
+  document.getElementById("settingsModal").style.display = "none";
+}
 
 async function loadTeamList(){
-  try{
+  try {
     const res = await fetch(`${SCRIPT_URL}?list=true`);
     const list = await res.json();
-    ["A","B"].forEach(team=>{
-      const dd = document.getElementById(`team${team}Dropdown`);
-      const input = document.getElementById(`team${team}Custom`);
+    const ddA = document.getElementById("teamADropdown");
+    const ddB = document.getElementById("teamBDropdown");
+    [ddA, ddB].forEach(dd => {
       dd.innerHTML = "";
-      list.forEach(name=>{
+      const optCustom = document.createElement("option");
+      optCustom.value = "-- Custom --";
+      optCustom.textContent = "-- Custom --";
+      dd.appendChild(optCustom);
+      list.forEach(team => {
         const opt = document.createElement("option");
-        opt.textContent = name;
-        opt.value = name;
+        opt.value = team;
+        opt.textContent = team;
         dd.appendChild(opt);
       });
-      handleDropdownChange(team);
     });
-  } catch(e){
-    console.error("Load team list failed:", e);
-  }
+    // Set dropdowns to current state
+    ddA.value = state.teamAName || "-- Custom --";
+    ddB.value = state.teamBName || "-- Custom --";
+    handleDropdownChange('A');
+    handleDropdownChange('B');
+  } catch(e){ console.error("Load team list error:", e); }
 }
 
 function handleDropdownChange(team){
   const dd = document.getElementById(`team${team}Dropdown`);
   const input = document.getElementById(`team${team}Custom`);
-  input.disabled = (dd.value !== "-- Custom --");
+  input.disabled = dd.value !== "-- Custom --";
+  if(input.disabled) input.value = "";
 }
 
 function updateTeams(){
-  for(const team of ["A","B"]){
+  ["A","B"].forEach(team=>{
     const dd = document.getElementById(`team${team}Dropdown`);
     const input = document.getElementById(`team${team}Custom`);
-    let name;
-    if(dd.value === "-- Custom --"){
-      name = input.value.trim();
-      if(!name){
-        alert("Custom team field is blank for Team "+team);
-        return;
-      }
-    } else {
-      name = dd.value;
+    let name = dd.value !== "-- Custom --" ? dd.value : input.value.trim();
+    if(!name){
+      alert("Custom team field is blank");
+      return;
     }
-    const field = team==="A" ? "teamAName" : "teamBName";
+    const field = team === "A" ? "teamAName" : "teamBName";
     state[field] = name;
-    pushUpdate(field,name);
-  }
+    pushUpdate(field, name);
+  });
   updateUI();
   closeSettings();
 }
