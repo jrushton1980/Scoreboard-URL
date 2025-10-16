@@ -26,6 +26,7 @@
   .modal-section { display: flex; justify-content: space-between; gap: 10px; }
   .team-setup { flex: 1; }
   select, input { width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: none; }
+  input:disabled { background-color: #444; color: #aaa; }
   .modal-buttons { margin-top: 20px; display: flex; justify-content: space-around; }
   .modal-buttons button { padding: 10px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
   .update-btn { background-color: #28a745; color: #fff; }
@@ -84,12 +85,12 @@
       <div class="team-setup">
         <h3>Team A</h3>
         <select id="teamADropdown" onchange="handleDropdownChange('A')"></select>
-        <input id="teamACustom" type="text" placeholder="Custom name" style="display:none;">
+        <input id="teamACustom" type="text" placeholder="Custom name">
       </div>
       <div class="team-setup">
         <h3>Team B</h3>
         <select id="teamBDropdown" onchange="handleDropdownChange('B')"></select>
-        <input id="teamBCustom" type="text" placeholder="Custom name" style="display:none;">
+        <input id="teamBCustom" type="text" placeholder="Custom name">
       </div>
     </div>
     <div class="modal-buttons">
@@ -109,11 +110,24 @@ let state = {
 };
 let timerInterval;
 
-async function init(){
-  updateUI();
-  await loadTeamList();
+// --- Initialization fetch ---
+async function init() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    Object.assign(state, data);
+    updateUI();
+    await loadTeamList();
+    // Preselect current teams
+    preselectTeams();
+  } catch(err){
+    console.error("Failed to fetch initial data:", err);
+    updateUI();
+    await loadTeamList();
+  }
 }
 
+// --- Update UI ---
 function updateUI(){
   document.getElementById('teamAName').textContent = state.teamAName;
   document.getElementById('teamBName').textContent = state.teamBName;
@@ -128,51 +142,56 @@ function updateUI(){
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
 }
 
+// --- Format MM:SS ---
 function formatTime(sec){
   const m = Math.floor(sec/60);
   const s = sec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
+// --- Timer ---
 function toggleClock(){
   state.Running = !state.Running;
   if(state.Running) startTimer(); else stopTimer();
   updateUI();
   pushUpdate("Running", state.Running);
+  pushUpdate("TimerSeconds", state.TimerSeconds);
 }
 
 function startTimer(){
   if(timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(()=>{
-    if(state.TimerSeconds>0){ state.TimerSeconds--; document.getElementById('timer').textContent = formatTime(state.TimerSeconds); }
+    if(state.TimerSeconds>0){ state.TimerSeconds--; document.getElementById('timer').textContent=formatTime(state.TimerSeconds); }
   },1000);
 }
 
 function stopTimer(){ clearInterval(timerInterval); }
 
+// --- Clock input ---
 function setClock(){
   const input = prompt("Enter time (MM:SS):");
   if(input && /^\d{1,2}:\d{2}$/.test(input)){
     const [m,s] = input.split(':').map(Number);
     state.TimerSeconds = m*60 + s;
     updateUI();
-    pushUpdate("TimerSeconds", state.TimerSeconds); // immediate push
+    pushUpdate("TimerSeconds", state.TimerSeconds);
   }
 }
 
+// --- Period input ---
 function setPeriod(){
   const input = prompt("Enter period number:");
   const val = parseInt(input);
   if(!isNaN(val) && val>0){ state.Period = val; updateUI(); pushUpdate("Period", val); }
 }
 
+// --- Scores / Shots ---
 function updateScore(team, change){
   const key = team==="A" ? "teamAScore":"teamBScore";
-  state[key] = Math.max(0, state[key]+change);
+  state[key] = Math.max(0,state[key]+change);
   updateUI();
-  pushUpdate(key, state[key]);
+  pushUpdate(key,state[key]);
 }
-
 function updateShots(team, change){
   const key = team==="A" ? "teamAShots":"teamBShots";
   state[key] = Math.max(0,state[key]+change);
@@ -180,45 +199,47 @@ function updateShots(team, change){
   pushUpdate(key,state[key]);
 }
 
+// --- Push updates ---
 async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
+// --- Settings modal ---
 function openSettings(){ document.getElementById("settingsModal").style.display="flex"; }
 function closeSettings(){ document.getElementById("settingsModal").style.display="none"; }
 
 async function loadTeamList(){
   const res = await fetch(`${SCRIPT_URL}?list=true`);
   const list = await res.json();
-  const ddA = document.getElementById("teamADropdown");
-  const ddB = document.getElementById("teamBDropdown");
+  const ddA=document.getElementById("teamADropdown");
+  const ddB=document.getElementById("teamBDropdown");
 
-  [ddA, ddB].forEach(dd=>{
+  [ddA,ddB].forEach(dd=>{
     dd.innerHTML="";
-    if(list[0]!=="-- Custom --"){
-      const optCustom = document.createElement("option");
-      optCustom.textContent="-- Custom --";
-      dd.appendChild(optCustom);
-    }
+    const optCustom=document.createElement("option");
+    optCustom.textContent="-- Custom --";
+    dd.appendChild(optCustom);
     list.forEach(team=>{
-      const opt = document.createElement("option");
+      const opt=document.createElement("option");
       opt.textContent=team;
       dd.appendChild(opt);
     });
   });
 }
 
+// --- Always visible custom input, disabled if not '-- Custom --' ---
 function handleDropdownChange(team){
   const dd = document.getElementById(`team${team}Dropdown`);
   const input = document.getElementById(`team${team}Custom`);
-  input.style.display = (dd.value==="-- Custom --") ? "block":"none";
+  input.disabled = dd.value !== "-- Custom --";
 }
 
+// --- Update team names ---
 function updateTeams(){
   ["A","B"].forEach(team=>{
     const dd = document.getElementById(`team${team}Dropdown`);
-    const custom = document.getElementById(`team${team}Custom`).value.trim();
-    let name = dd.value==="-- Custom --" ? custom : dd.value;
+    const input = document.getElementById(`team${team}Custom`);
+    const name = dd.value==="-- Custom --" ? input.value.trim() : dd.value;
     if(!name){ alert("Custom team field is blank"); return; }
     const field = team==="A" ? "teamAName":"teamBName";
     state[field]=name;
@@ -226,6 +247,21 @@ function updateTeams(){
   });
   updateUI();
   closeSettings();
+}
+
+// --- Preselect current teams in dropdown ---
+function preselectTeams(){
+  ["A","B"].forEach(team=>{
+    const dd=document.getElementById(`team${team}Dropdown`);
+    const input=document.getElementById(`team${team}Custom`);
+    const current = state[team==="A"?"teamAName":"teamBName"];
+    let found = false;
+    for(let i=0;i<dd.options.length;i++){
+      if(dd.options[i].value===current){ dd.selectedIndex=i; found=true; break; }
+    }
+    if(!found){ dd.selectedIndex=0; input.value=current; input.disabled=false; }
+    else{ input.value=current; input.disabled=dd.value!=="-- Custom --"; }
+  });
 }
 
 init();
