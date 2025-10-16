@@ -145,92 +145,59 @@ body {
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
 
-let state = {
-  teamAName: "Team A",
-  teamBName: "Team B",
-  teamAScore: 0,
-  teamBScore: 0,
-  teamAShots: 0,
-  teamBShots: 0,
-  Period: 1,
-  TimerSeconds: 1200,
-  Running: false
-};
+let timerSeconds = 20*60; 
+let running = false;
+let period = 1;
 
-let timerInterval;
-
-// Initialize scoreboard
-async function init() {
-  await fetchState();
-  updateUI();
-  startLocalTimer();
-  setInterval(fetchState, 3000); // Poll for updates every 3s
-}
-
-async function fetchState() {
+// Fetch data from Google Apps Script web app
+async function refresh() {
   try {
-    const res = await fetch(SCRIPT_URL);
+    const res = await fetch(DATA_URL);
     const data = await res.json();
 
-    // Detect changes and update local state
-    const runningChanged = data.Running !== state.Running;
-    const timerChanged = data.TimerSeconds !== state.TimerSeconds;
+    document.getElementById("teamALogo").src = data.teamALogo;
+    document.getElementById("teamAName").innerText = data.teamAName;
+    document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
+    document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
 
-    Object.assign(state, data);
+    document.getElementById("teamBLogo").src = data.teamBLogo;
+    document.getElementById("teamBName").innerText = data.teamBName;
+    document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
+    document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
 
-    if (runningChanged || timerChanged) {
-      updateUI();
+    document.getElementById("scoreA").innerText = data.teamAScore;
+    document.getElementById("scoreB").innerText = data.teamBScore;
+
+    period = data.Period;
+    running = data.Running === true || data.Running === "TRUE";
+    if(!running){
+      const [m,s] = (data.TimerSeconds || 1200);
+      timerSeconds = parseInt(data.TimerSeconds) || m*60 + (s||0);
     }
-
-    // If timer was stopped remotely, ensure local timer stops
-    if (!state.Running && timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    } else if (state.Running && !timerInterval) {
-      startLocalTimer();
-    }
-
   } catch (err) {
-    console.error("Error fetching state:", err);
+    console.error("Failed to fetch scoreboard data:", err);
   }
 }
 
-function updateUI() {
-  document.getElementById('teamAName').textContent = state.teamAName;
-  document.getElementById('teamBName').textContent = state.teamBName;
-  document.getElementById('teamAScore').textContent = state.teamAScore;
-  document.getElementById('teamBScore').textContent = state.teamBScore;
-  document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
-  document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
-  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
-  document.getElementById('period').textContent = `Period ${state.Period}`;
+// Update period-clock display
+function updateClockDisplay() {
+  const min = Math.floor(timerSeconds/60);
+  const sec = timerSeconds % 60;
+  document.getElementById("periodClock").innerText = 
+    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
 }
 
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
+// Tick the clock if running
+setInterval(()=>{
+  if(running && timerSeconds>0) timerSeconds--;
+  updateClockDisplay();
+}, 1000);
 
-function startLocalTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (state.TimerSeconds > 0) {
-      state.TimerSeconds--;
-      document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
-    } else {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      state.Running = false; // stop locally at 0
-    }
-  }, 1000);
-}
-
-// Call init on page load
-init();
+// Refresh from sheet every 1.5s
+setInterval(refresh, 1500);
+refresh();
 </script>
-
 </body>
 </html>
