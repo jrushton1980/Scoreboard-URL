@@ -17,7 +17,7 @@ body {
   align-items: center;
 }
 
-/* SETTINGS */
+/* ================= SETTINGS ================= */
 .settings-btn {
   position: fixed;
   top: 10px;
@@ -26,11 +26,11 @@ body {
   font-size: 28px;
   background: none;
   border: none;
-  color: white;
+  color: #fff;
   z-index: 9999;
 }
 
-/* SCOREBOARD */
+/* ================= SCOREBOARD ================= */
 .scoreboard {
   width: 95%;
   background: #1e1e1e;
@@ -40,49 +40,58 @@ body {
   text-align: center;
 }
 
+/* TEAM WRAPPER (CENTERED BUT SAFE) */
 .team-row {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: flex-start;
 }
 
+/* each team block is centered internally */
 .team-block {
+  width: 42%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 40%;
 }
 
+/* LOGOS */
 .logo {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   border: 2px solid #fff;
   object-fit: cover;
   margin-bottom: 4px;
 }
 
+/* TEXT */
 .team-name {
   font-size: 18px;
   font-weight: bold;
+  text-align: center;
 }
 
 .team-goals {
   font-size: 36px;
   font-weight: bold;
+  margin-top: 2px;
 }
 
 .team-shots {
   font-size: 18px;
   opacity: 0.9;
+  margin-top: 2px;
 }
 
+/* CENTER DASH */
 #dash {
   font-size: 28px;
   align-self: center;
+  opacity: 0.8;
 }
 
-/* CLOCK */
+/* ================= CLOCK ================= */
 .clock-section {
   display: flex;
   justify-content: space-between;
@@ -98,10 +107,10 @@ body {
   flex: 1;
   padding: 14px 0;
   margin: 0 4px;
-  background: #333;
-  border: none;
-  color: white;
   border-radius: 8px;
+  border: none;
+  background-color: #333;
+  color: #fff;
 }
 
 #timer {
@@ -113,30 +122,22 @@ body {
   font-size: 18px;
 }
 
-/* START */
+/* ================= START BUTTON ================= */
 #startStopBtn {
   width: 95%;
   font-size: 28px;
   padding: 40px 0;
   border-radius: 12px;
   border: none;
-  color: white;
+  color: #fff;
+  background-color: #28a745;
   margin-bottom: 16px;
 }
 
-.pulse {
-  animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* BUTTONS */
+/* ================= BUTTONS ================= */
 .team-controls {
   display: flex;
+  justify-content: space-between;
   width: 95%;
   gap: 10px;
 }
@@ -149,21 +150,27 @@ body {
 }
 
 .team-column button.plus {
-  font-size: 26px;
+  font-size: 24px;
   padding: 40px 0;
-  background: #555;
-  border: none;
-  color: white;
   border-radius: 10px;
+  border: none;
+  background-color: #555;
+  color: #fff;
 }
 
 .team-column button.minus {
   font-size: 24px;
   padding: 12px 0;
-  background: #777;
-  border: none;
-  color: white;
   border-radius: 10px;
+  border: none;
+  background-color: #777;
+  color: #fff;
+}
+
+/* TOUCH FEEL */
+button:active {
+  transform: scale(0.92);
+  opacity: 0.75;
 }
 
 /* ANIMATION */
@@ -178,15 +185,15 @@ body {
 }
 
 @keyframes flashGreen {
-  0% { color: white; }
+  0% { color: #fff; }
   40% { color: #28a745; }
-  100% { color: white; }
+  100% { color: #fff; }
 }
 
 @keyframes flashRed {
-  0% { color: white; }
+  0% { color: #fff; }
   40% { color: #dc3545; }
-  100% { color: white; }
+  100% { color: #fff; }
 }
 </style>
 </head>
@@ -199,6 +206,7 @@ body {
 
   <div class="team-row">
 
+    <!-- TEAM A -->
     <div class="team-block">
       <img id="teamALogo" class="logo">
       <div class="team-name" id="teamAName">Team A</div>
@@ -208,6 +216,7 @@ body {
 
     <div id="dash">-</div>
 
+    <!-- TEAM B -->
     <div class="team-block">
       <img id="teamBLogo" class="logo">
       <div class="team-name" id="teamBName">Team B</div>
@@ -221,7 +230,7 @@ body {
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
 
-  <div style="flex:2;text-align:center;">
+  <div style="flex:2; text-align:center;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
@@ -229,21 +238,21 @@ body {
   <button onclick="setClock()">Clock</button>
 </div>
 
-<button id="startStopBtn" onclick="toggleClock()" style="background:#28a745;">Start</button>
+<button id="startStopBtn" onclick="toggleClock()">Start</button>
 
 <div class="team-controls">
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('A',-1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
   </div>
 
   <div class="team-column">
     <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('B',-1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
   </div>
 </div>
 
@@ -264,7 +273,7 @@ let state = {
 
 let timerInterval;
 
-/* FIXED CORE FUNCTIONS */
+/* KEEP ORIGINAL WORKING LOGIC */
 function updateUI(){
   document.getElementById('teamAName').textContent=state.teamAName;
   document.getElementById('teamBName').textContent=state.teamBName;
@@ -277,8 +286,7 @@ function updateUI(){
 
   const btn=document.getElementById('startStopBtn');
   btn.textContent=state.Running?"Stop":"Start";
-  btn.style.background=state.Running?"#dc3545":"#28a745";
-  btn.classList.toggle("pulse",state.Running);
+  btn.style.backgroundColor=state.Running?"#dc3545":"#28a745";
 }
 
 function formatTime(sec){
@@ -293,7 +301,6 @@ function toggleClock(){
   pushUpdate("Running",state.Running);
 }
 
-/* SCORE */
 function updateScore(team,change){
   const key=team==="A"?"teamAScore":"teamBScore";
   state[key]=Math.max(0,state[key]+change);
@@ -301,7 +308,6 @@ function updateScore(team,change){
   pushUpdate(key,state[key]);
 }
 
-/* SHOTS */
 function updateShots(team,change){
   const key=team==="A"?"teamAShots":"teamBShots";
   state[key]=Math.max(0,state[key]+change);
@@ -309,7 +315,6 @@ function updateShots(team,change){
   pushUpdate(key,state[key]);
 }
 
-/* CLOCK */
 function setClock(){
   const input=prompt("MM:SS");
   if(!input) return;
@@ -328,12 +333,11 @@ function setPeriod(){
   }
 }
 
-/* SYNC */
 async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${value}`);
 }
 
-/* LOGOS + INIT */
+/* INIT WITH LOGOS ONLY (SAFE ADDITION) */
 async function init(){
   const res=await fetch(SCRIPT_URL);
   const data=await res.json();
