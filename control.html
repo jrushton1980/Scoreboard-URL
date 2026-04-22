@@ -17,81 +17,49 @@ body {
   align-items: center;
 }
 
-/* ================= SETTINGS ================= */
-.settings-btn {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 28px;
-  background: none;
-  border: none;
-  color: #fff;
-  z-index: 9999;
-}
-
-/* ================= SCOREBOARD ================= */
 .scoreboard {
   width: 95%;
   background: #1e1e1e;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   margin-bottom: 12px;
   text-align: center;
 }
 
-/* TEAM WRAPPER (CENTERED BUT SAFE) */
 .team-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  font-weight: bold;
+  font-size: 18px;
 }
 
-/* each team block is centered internally */
-.team-block {
-  width: 42%;
+.score-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* LOGOS */
-.logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  object-fit: cover;
-  margin-bottom: 4px;
-}
-
-/* TEXT */
-.team-name {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.team-goals {
+  justify-content: space-between;
   font-size: 36px;
-  font-weight: bold;
-  margin-top: 2px;
+  margin-top: 6px;
 }
 
-.team-shots {
-  font-size: 18px;
+/* 🔥 Bigger shots text */
+.shots-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  margin-top: 4px;
   opacity: 0.9;
-  margin-top: 2px;
 }
 
-/* CENTER DASH */
-#dash {
-  font-size: 28px;
-  align-self: center;
-  opacity: 0.8;
+/* 🔥 Enhanced button press feel */
+button {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.04s ease, opacity 0.04s ease;
 }
 
-/* ================= CLOCK ================= */
+button:active {
+  transform: scale(0.90);
+  opacity: 0.7;
+}
+
 .clock-section {
   display: flex;
   justify-content: space-between;
@@ -105,6 +73,7 @@ body {
 
 .clock-section button {
   flex: 1;
+  font-size: 18px;
   padding: 14px 0;
   margin: 0 4px;
   border-radius: 8px;
@@ -116,25 +85,36 @@ body {
 #timer {
   font-size: 28px;
   font-weight: bold;
+  text-align: center;
 }
 
 #period {
   font-size: 18px;
+  text-align: center;
 }
 
-/* ================= START BUTTON ================= */
 #startStopBtn {
   width: 95%;
   font-size: 28px;
   padding: 40px 0;
   border-radius: 12px;
   border: none;
-  color: #fff;
+  color: white;
   background-color: #28a745;
   margin-bottom: 16px;
 }
 
-/* ================= BUTTONS ================= */
+/* Pulse */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 .team-controls {
   display: flex;
   justify-content: space-between;
@@ -167,13 +147,18 @@ body {
   color: #fff;
 }
 
-/* TOUCH FEEL */
-button:active {
-  transform: scale(0.92);
-  opacity: 0.75;
+/* 🔥 Score animations */
+.score-pop {
+  animation: pop 0.25s ease;
 }
 
-/* ANIMATION */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* 🔥 Longer + bold feedback */
 .flash-green {
   animation: flashGreen 1s ease;
   font-weight: bold;
@@ -195,6 +180,17 @@ button:active {
   40% { color: #dc3545; }
   100% { color: #fff; }
 }
+
+.settings-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+}
+
 </style>
 </head>
 
@@ -203,34 +199,27 @@ button:active {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
-
   <div class="team-row">
+    <span id="teamAName">Team A</span>
+    <span id="teamBName">Team B</span>
+  </div>
 
-    <!-- TEAM A -->
-    <div class="team-block">
-      <img id="teamALogo" class="logo">
-      <div class="team-name" id="teamAName">Team A</div>
-      <div class="team-goals" id="teamAScore">0</div>
-      <div class="team-shots" id="teamAShots">Shots: 0</div>
-    </div>
+  <div class="score-row">
+    <span id="teamAScore">0</span>
+    <span>-</span>
+    <span id="teamBScore">0</span>
+  </div>
 
-    <div id="dash">-</div>
-
-    <!-- TEAM B -->
-    <div class="team-block">
-      <img id="teamBLogo" class="logo">
-      <div class="team-name" id="teamBName">Team B</div>
-      <div class="team-goals" id="teamBScore">0</div>
-      <div class="team-shots" id="teamBShots">Shots: 0</div>
-    </div>
-
+  <div class="shots-row">
+    <span id="teamAShots">Shots: 0</span>
+    <span id="teamBShots">Shots: 0</span>
   </div>
 </div>
 
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
 
-  <div style="flex:2; text-align:center;">
+  <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
@@ -259,21 +248,24 @@ button:active {
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
 
-let state = {
-  teamAName:"Team A",
-  teamAScore:0,
-  teamAShots:0,
-  teamBName:"Team B",
-  teamBScore:0,
-  teamBShots:0,
-  Period:1,
-  TimerSeconds:1200,
-  Running:false
-};
-
+let state = {teamAName:"Team A", teamAScore:0, teamAShots:0, teamBName:"Team B", teamBScore:0, teamBShots:0, Period:1, TimerSeconds:1200, Running:false};
 let timerInterval;
 
-/* KEEP ORIGINAL WORKING LOGIC */
+/* 🔥 Animation helper */
+function animateValue(id, change){
+  const el = document.getElementById(id);
+
+  el.classList.remove("score-pop","flash-green","flash-red");
+  void el.offsetWidth;
+
+  el.classList.add("score-pop");
+  el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
+}
+
 function updateUI(){
   document.getElementById('teamAName').textContent=state.teamAName;
   document.getElementById('teamBName').textContent=state.teamBName;
@@ -284,9 +276,10 @@ function updateUI(){
   document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
   document.getElementById('period').textContent=`Period ${state.Period}`;
 
-  const btn=document.getElementById('startStopBtn');
-  btn.textContent=state.Running?"Stop":"Start";
-  btn.style.backgroundColor=state.Running?"#dc3545":"#28a745";
+  const btn = document.getElementById('startStopBtn');
+  btn.textContent = state.Running ? "Stop" : "Start";
+  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+  btn.classList.toggle("pulse", state.Running);
 }
 
 function formatTime(sec){
@@ -297,55 +290,73 @@ function formatTime(sec){
 
 function toggleClock(){
   state.Running=!state.Running;
+  if(state.Running) startTimer(); else stopTimer();
   updateUI();
   pushUpdate("Running",state.Running);
 }
 
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    if(state.TimerSeconds>0){
+      state.TimerSeconds--;
+      document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
+      pushUpdate("TimerSeconds",state.TimerSeconds);
+    }
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+function setClock(){
+  const input=prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s]=input.split(':').map(Number);
+    state.TimerSeconds=m*60+s;
+    updateUI();
+    pushUpdate("TimerSeconds",state.TimerSeconds);
+  }
+}
+
+function setPeriod(){
+  const val=parseInt(prompt("Enter period number:"));
+  if(!isNaN(val)&&val>0){
+    state.Period=val;
+    updateUI();
+    pushUpdate("Period",val);
+  }
+}
+
 function updateScore(team,change){
   const key=team==="A"?"teamAScore":"teamBScore";
+  const el=team==="A"?"teamAScore":"teamBScore";
   state[key]=Math.max(0,state[key]+change);
   updateUI();
+  animateValue(el,change);
   pushUpdate(key,state[key]);
 }
 
 function updateShots(team,change){
   const key=team==="A"?"teamAShots":"teamBShots";
+  const el=team==="A"?"teamAShots":"teamBShots";
   state[key]=Math.max(0,state[key]+change);
   updateUI();
+  animateValue(el,change);
   pushUpdate(key,state[key]);
 }
 
-function setClock(){
-  const input=prompt("MM:SS");
-  if(!input) return;
-  const [m,s]=input.split(":").map(Number);
-  state.TimerSeconds=m*60+s;
-  updateUI();
-  pushUpdate("TimerSeconds",state.TimerSeconds);
-}
-
-function setPeriod(){
-  const p=parseInt(prompt("Period"));
-  if(p>0){
-    state.Period=p;
-    updateUI();
-    pushUpdate("Period",p);
-  }
-}
-
 async function pushUpdate(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${value}`);
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
-/* INIT WITH LOGOS ONLY (SAFE ADDITION) */
 async function init(){
-  const res=await fetch(SCRIPT_URL);
-  const data=await res.json();
-  Object.assign(state,data);
-
-  document.getElementById("teamALogo").src=data.teamALogo;
-  document.getElementById("teamBLogo").src=data.teamBLogo;
-
+  try{
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    Object.assign(state,data);
+  } catch(e){}
   updateUI();
 }
 
