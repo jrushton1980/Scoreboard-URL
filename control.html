@@ -7,204 +7,224 @@
 
 <style>
 body {
-  background:#111;
-  color:#fff;
+  background-color: #111;
+  color: #fff;
   font-family: Arial, sans-serif;
-  margin:0;
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* ================= SETTINGS ================= */
+/* SETTINGS BUTTON */
 .settings-btn {
   position: fixed;
   top: 10px;
   right: 10px;
-  font-size: 28px;
   background: none;
   border: none;
-  color: white;
-  cursor: pointer;
-  z-index: 9999;
+  color: #fff;
+  font-size: 28px;
 }
 
-/* ================= SCOREBOARD ================= */
+/* SCOREBOARD */
 .scoreboard {
-  width:95%;
-  background:#1e1e1e;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:12px;
-  text-align:center;
+  width: 95%;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
-/* TEAM ROW (CENTERED STACKS) */
+/* =========================
+   STACKED TEAM LAYOUT ONLY CHANGE
+   ========================= */
+
 .team-row {
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
 }
 
-/* TEAM BLOCK */
+/* NEW stacked column style */
 .team-block {
-  width:42%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
-/* LOGOS */
-.team-logo {
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  object-fit:cover;
-  border:2px solid #fff;
-  margin-bottom:4px;
-}
-
-/* TEXT */
+/* text styling */
 .team-name {
-  font-size:18px;
-  font-weight:bold;
+  font-weight: bold;
+  font-size: 18px;
 }
 
-.team-goals {
-  font-size:38px;
-  font-weight:bold;
-  margin-top:2px;
+.team-score {
+  font-size: 36px;
+  font-weight: bold;
 }
 
 .team-shots {
-  font-size:18px;
-  opacity:0.9;
+  font-size: 20px;
+  opacity: 0.9;
 }
 
-/* DASH */
-#dash {
-  font-size:28px;
-  align-self:center;
-  opacity:0.7;
+/* SCORE ROW REMAINS FOR CENTER DASH */
+.score-row {
+  display: flex;
+  justify-content: center;
+  font-size: 36px;
+  margin-top: 6px;
+  gap: 10px;
 }
 
-/* ================= CLOCK ================= */
+/* SHOTS ROW (kept for compatibility but visually unused now) */
+.shots-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* CLOCK */
 .clock-section {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:95%;
-  background:#1d1d1d;
-  border-radius:12px;
-  padding:10px;
-  margin-bottom:12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 95%;
+  background: #1d1d1d;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
 }
 
 .clock-section button {
-  flex:1;
-  margin:0 4px;
-  padding:14px 0;
-  border:none;
-  border-radius:8px;
-  background:#333;
-  color:#fff;
+  flex: 1;
+  font-size: 18px;
+  padding: 14px 0;
+  margin: 0 4px;
+  border-radius: 8px;
+  border: none;
+  background-color: #333;
+  color: #fff;
 }
 
 #timer {
-  font-size:28px;
-  font-weight:bold;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
 }
 
 #period {
-  font-size:18px;
+  font-size: 18px;
+  text-align: center;
 }
 
-/* ================= START ================= */
+/* START BUTTON */
 #startStopBtn {
-  width:95%;
-  padding:40px 0;
-  font-size:28px;
-  border:none;
-  border-radius:12px;
-  background:#28a745;
-  color:#fff;
-  margin-bottom:12px;
+  width: 95%;
+  font-size: 28px;
+  padding: 40px 0;
+  border-radius: 12px;
+  border: none;
+  color: white;
+  background-color: #28a745;
+  margin-bottom: 16px;
 }
 
-/* ================= CONTROLS ================= */
+/* CONTROLS */
 .team-controls {
-  display:flex;
-  width:95%;
-  gap:10px;
+  display: flex;
+  justify-content: space-between;
+  width: 95%;
+  gap: 10px;
 }
 
 .team-column {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
+.team-column button.plus {
+  font-size: 24px;
+  padding: 40px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #555;
+  color: #fff;
+}
+
+.team-column button.minus {
+  font-size: 24px;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #777;
+  color: #fff;
+}
+
+/* BUTTON PRESS FEEDBACK */
 button {
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.05s ease, opacity 0.05s ease;
+  transition: transform 0.04s ease, opacity 0.04s ease;
 }
 
 button:active {
-  transform: scale(0.92);
-  opacity:0.7;
+  transform: scale(0.90);
+  opacity: 0.7;
 }
 
-button.plus {
-  font-size:26px;
-  padding:40px 0;
-  border:none;
-  border-radius:10px;
-  background:#555;
-  color:#fff;
+/* PULSE (start/stop) */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
 }
 
-button.minus {
-  font-size:24px;
-  padding:12px 0;
-  border:none;
-  border-radius:10px;
-  background:#777;
-  color:#fff;
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
-/* ================= ANIMATIONS ================= */
+/* SCORE ANIMATION */
+.score-pop {
+  animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
 .flash-green {
   animation: flashGreen 1s ease;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 .flash-red {
   animation: flashRed 1s ease;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 @keyframes flashGreen {
-  0% { color:#fff; }
-  40% { color:#28a745; }
-  100% { color:#fff; }
+  0% { color: #fff; }
+  40% { color: #28a745; }
+  100% { color: #fff; }
 }
 
 @keyframes flashRed {
-  0% { color:#fff; }
-  40% { color:#dc3545; }
-  100% { color:#fff; }
-}
-
-.pop {
-  animation: popAnim 0.25s ease;
-}
-
-@keyframes popAnim {
-  0% { transform:scale(1); }
-  50% { transform:scale(1.25); }
-  100% { transform:scale(1); }
+  0% { color: #fff; }
+  40% { color: #dc3545; }
+  100% { color: #fff; }
 }
 </style>
 </head>
@@ -218,19 +238,17 @@ button.minus {
   <div class="team-row">
 
     <div class="team-block">
-      <img id="teamALogo" class="team-logo">
-      <div id="teamAName" class="team-name">Team A</div>
-      <div id="teamAScore" class="team-goals">0</div>
-      <div id="teamAShots" class="team-shots">Shots: 0</div>
+      <span id="teamAName" class="team-name">Team A</span>
+      <span id="teamAScore" class="team-score">0</span>
+      <span id="teamAShots" class="team-shots">Shots: 0</span>
     </div>
 
-    <div id="dash">-</div>
+    <div>-</div>
 
     <div class="team-block">
-      <img id="teamBLogo" class="team-logo">
-      <div id="teamBName" class="team-name">Team B</div>
-      <div id="teamBScore" class="team-goals">0</div>
-      <div id="teamBShots" class="team-shots">Shots: 0</div>
+      <span id="teamBName" class="team-name">Team B</span>
+      <span id="teamBScore" class="team-score">0</span>
+      <span id="teamBShots" class="team-shots">Shots: 0</span>
     </div>
 
   </div>
@@ -239,7 +257,7 @@ button.minus {
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
 
-  <div style="flex:2;text-align:center;">
+  <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
@@ -280,96 +298,122 @@ let state = {
   Running:false
 };
 
-function animate(id, type){
+let timerInterval;
+
+/* ANIMATION */
+function animateValue(id, change){
   const el = document.getElementById(id);
-  el.classList.remove("flash-green","flash-red","pop");
+
+  el.classList.remove("score-pop","flash-green","flash-red");
   void el.offsetWidth;
-  el.classList.add("pop");
-  if(type==="green") el.classList.add("flash-green");
-  if(type==="red") el.classList.add("flash-red");
-  setTimeout(()=>el.classList.remove("flash-green","flash-red"),1000);
+
+  el.classList.add("score-pop");
+  el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
 }
 
-/* ================= CORE UI ================= */
+/* UI */
 function updateUI(){
-  document.getElementById("teamAName").textContent=state.teamAName;
-  document.getElementById("teamBName").textContent=state.teamBName;
+  document.getElementById('teamAName').textContent=state.teamAName;
+  document.getElementById('teamBName').textContent=state.teamBName;
 
-  document.getElementById("teamAScore").textContent=state.teamAScore;
-  document.getElementById("teamBScore").textContent=state.teamBScore;
+  document.getElementById('teamAScore').textContent=state.teamAScore;
+  document.getElementById('teamBScore').textContent=state.teamBScore;
 
-  document.getElementById("teamAShots").textContent="Shots: "+state.teamAShots;
-  document.getElementById("teamBShots").textContent="Shots: "+state.teamBShots;
+  document.getElementById('teamAShots').textContent=`Shots: ${state.teamAShots}`;
+  document.getElementById('teamBShots').textContent=`Shots: ${state.teamBShots}`;
 
-  document.getElementById("timer").textContent=formatTime(state.TimerSeconds);
-  document.getElementById("period").textContent="Period "+state.Period;
+  document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
+  document.getElementById('period').textContent=`Period ${state.Period}`;
 
-  const btn=document.getElementById("startStopBtn");
+  const btn=document.getElementById('startStopBtn');
   btn.textContent=state.Running?"Stop":"Start";
-  btn.style.background=state.Running?"#dc3545":"#28a745";
+  btn.style.backgroundColor=state.Running?"#dc3545":"#28a745";
+  btn.classList.toggle("pulse", state.Running);
 }
 
-function formatTime(s){
-  let m=Math.floor(s/60);
-  let sec=s%60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+function formatTime(sec){
+  const m=Math.floor(sec/60);
+  const s=sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-/* ================= ACTIONS ================= */
+/* TIMER */
 function toggleClock(){
   state.Running=!state.Running;
+  if(state.Running) startTimer(); else stopTimer();
   updateUI();
-  push("Running",state.Running);
+  pushUpdate("Running",state.Running);
 }
 
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    if(state.TimerSeconds>0){
+      state.TimerSeconds--;
+      document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
+      pushUpdate("TimerSeconds",state.TimerSeconds);
+    }
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+/* CONTROLS */
 function setClock(){
-  let v=prompt("MM:SS");
-  if(!v) return;
-  let [m,s]=v.split(":").map(Number);
-  state.TimerSeconds=m*60+s;
-  updateUI();
-  push("TimerSeconds",state.TimerSeconds);
-}
-
-function setPeriod(){
-  let p=parseInt(prompt("Period"));
-  if(p>0){
-    state.Period=p;
+  const input=prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s]=input.split(':').map(Number);
+    state.TimerSeconds=m*60+s;
     updateUI();
-    push("Period",p);
+    pushUpdate("TimerSeconds",state.TimerSeconds);
   }
 }
 
-function updateScore(team,val){
-  let key=team==="A"?"teamAScore":"teamBScore";
-  let id=team==="A"?"teamAScore":"teamBScore";
-  state[key]=Math.max(0,state[key]+val);
+function setPeriod(){
+  const val=parseInt(prompt("Enter period number:"));
+  if(!isNaN(val)&&val>0){
+    state.Period=val;
+    updateUI();
+    pushUpdate("Period",val);
+  }
+}
+
+function updateScore(team,change){
+  const key=team==="A"?"teamAScore":"teamBScore";
+  const el=team==="A"?"teamAScore":"teamBScore";
+  state[key]=Math.max(0,state[key]+change);
   updateUI();
-  push(key,state[key]);
-  animate(id,val>0?"green":"red");
+  animateValue(el,change);
+  pushUpdate(key,state[key]);
 }
 
-function updateShots(team,val){
-  let key=team==="A"?"teamAShots":"teamBShots";
-  state[key]=Math.max(0,state[key]+val);
+function updateShots(team,change){
+  const key=team==="A"?"teamAShots":"teamBShots";
+  const el=team==="A"?"teamAShots":"teamBShots";
+  state[key]=Math.max(0,state[key]+change);
   updateUI();
-  push(key,state[key]);
+  animateValue(el,change);
+  pushUpdate(key,state[key]);
 }
 
-/* ================= SYNC ================= */
-async function push(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${value}`);
+/* SYNC */
+async function pushUpdate(field,value){
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
-/* ================= INIT ================= */
+/* INIT */
 async function init(){
-  const res=await fetch(SCRIPT_URL);
-  const data=await res.json();
-  Object.assign(state,data);
-
-  document.getElementById("teamALogo").src=data.teamALogo;
-  document.getElementById("teamBLogo").src=data.teamBLogo;
-
+  try{
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    Object.assign(state,data);
+  } catch(e){}
   updateUI();
 }
 
