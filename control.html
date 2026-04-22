@@ -17,21 +17,20 @@ body {
   align-items: center;
 }
 
-/* ================= SETTINGS BUTTON ================= */
+/* SETTINGS */
 .settings-btn {
   position: fixed;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
+  font-size: 28px;
   background: none;
   border: none;
-  color: #fff;
-  font-size: 28px;
+  color: white;
   z-index: 9999;
-  cursor: pointer;
 }
 
-/* ================= SCOREBOARD ================= */
+/* SCOREBOARD */
 .scoreboard {
   width: 95%;
   background: #1e1e1e;
@@ -41,15 +40,12 @@ body {
   text-align: center;
 }
 
-/* LOGO + TEAM BLOCK LAYOUT */
 .team-row {
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
-  margin-bottom: 6px;
 }
 
-/* each team becomes a vertical stack */
 .team-block {
   display: flex;
   flex-direction: column;
@@ -57,64 +53,33 @@ body {
   width: 40%;
 }
 
-/* LOGOS */
 .logo {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  object-fit: cover;
   border: 2px solid #fff;
+  object-fit: cover;
   margin-bottom: 4px;
 }
 
-/* TEAM NAME */
 .team-name {
-  font-weight: bold;
   font-size: 18px;
-  margin-bottom: 2px;
-}
-
-/* GOALS (slightly larger per request) */
-.team-goals {
-  font-size: 34px;
   font-weight: bold;
-  margin-top: 2px;
-  margin-bottom: 2px;
 }
 
-/* SHOTS */
+.team-goals {
+  font-size: 36px;
+  font-weight: bold;
+}
+
 .team-shots {
   font-size: 18px;
   opacity: 0.9;
 }
 
-/* SCORE CENTER (kept clean) */
-.score-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 36px;
-  margin-top: 6px;
-}
-
 #dash {
-  margin: 0 10px;
-}
-
-/* SHOTS ROW (hidden redundancy removed visually but kept aligned under blocks if needed) */
-.shots-row {
-  display: none;
-}
-
-/* ================= BUTTONS ================= */
-button {
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.04s ease, opacity 0.04s ease;
-}
-
-button:active {
-  transform: scale(0.90);
-  opacity: 0.7;
+  font-size: 28px;
+  align-self: center;
 }
 
 /* CLOCK */
@@ -131,27 +96,24 @@ button:active {
 
 .clock-section button {
   flex: 1;
-  font-size: 18px;
   padding: 14px 0;
   margin: 0 4px;
-  border-radius: 8px;
+  background: #333;
   border: none;
-  background-color: #333;
-  color: #fff;
+  color: white;
+  border-radius: 8px;
 }
 
 #timer {
   font-size: 28px;
   font-weight: bold;
-  text-align: center;
 }
 
 #period {
   font-size: 18px;
-  text-align: center;
 }
 
-/* START BUTTON */
+/* START */
 #startStopBtn {
   width: 95%;
   font-size: 28px;
@@ -159,24 +121,22 @@ button:active {
   border-radius: 12px;
   border: none;
   color: white;
-  background-color: #28a745;
   margin-bottom: 16px;
 }
 
 .pulse {
-  animation: pulseAnim 1.2s infinite;
+  animation: pulse 1.2s infinite;
 }
 
-@keyframes pulseAnim {
+@keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-/* TEAM BUTTONS */
+/* BUTTONS */
 .team-controls {
   display: flex;
-  justify-content: space-between;
   width: 95%;
   gap: 10px;
 }
@@ -189,24 +149,24 @@ button:active {
 }
 
 .team-column button.plus {
-  font-size: 26px; /* slightly larger per request */
+  font-size: 26px;
   padding: 40px 0;
-  border-radius: 10px;
+  background: #555;
   border: none;
-  background-color: #555;
-  color: #fff;
+  color: white;
+  border-radius: 10px;
 }
 
 .team-column button.minus {
   font-size: 24px;
   padding: 12px 0;
-  border-radius: 10px;
+  background: #777;
   border: none;
-  background-color: #777;
-  color: #fff;
+  color: white;
+  border-radius: 10px;
 }
 
-/* SCORE FEEDBACK */
+/* ANIMATION */
 .flash-green {
   animation: flashGreen 1s ease;
   font-weight: bold;
@@ -218,29 +178,27 @@ button:active {
 }
 
 @keyframes flashGreen {
-  0% { color: #fff; }
+  0% { color: white; }
   40% { color: #28a745; }
-  100% { color: #fff; }
+  100% { color: white; }
 }
 
 @keyframes flashRed {
-  0% { color: #fff; }
+  0% { color: white; }
   40% { color: #dc3545; }
-  100% { color: #fff; }
+  100% { color: white; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- FIXED CENTERED GEAR -->
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
 
   <div class="team-row">
 
-    <!-- TEAM A -->
     <div class="team-block">
       <img id="teamALogo" class="logo">
       <div class="team-name" id="teamAName">Team A</div>
@@ -250,7 +208,6 @@ button:active {
 
     <div id="dash">-</div>
 
-    <!-- TEAM B -->
     <div class="team-block">
       <img id="teamBLogo" class="logo">
       <div class="team-name" id="teamBName">Team B</div>
@@ -259,13 +216,12 @@ button:active {
     </div>
 
   </div>
-
 </div>
 
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
 
-  <div style="flex:2;">
+  <div style="flex:2;text-align:center;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
@@ -273,21 +229,21 @@ button:active {
   <button onclick="setClock()">Clock</button>
 </div>
 
-<button id="startStopBtn" onclick="toggleClock()">Start</button>
+<button id="startStopBtn" onclick="toggleClock()" style="background:#28a745;">Start</button>
 
 <div class="team-controls">
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
+    <button class="minus" onclick="updateScore('A',-1)">+1 Goal</button>
   </div>
 
   <div class="team-column">
     <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
     <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
-    <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
+    <button class="minus" onclick="updateScore('B',-1)">+1 Goal</button>
   </div>
 </div>
 
@@ -308,23 +264,21 @@ let state = {
 
 let timerInterval;
 
+/* FIXED CORE FUNCTIONS */
 function updateUI(){
   document.getElementById('teamAName').textContent=state.teamAName;
   document.getElementById('teamBName').textContent=state.teamBName;
-
   document.getElementById('teamAScore').textContent=state.teamAScore;
   document.getElementById('teamBScore').textContent=state.teamBScore;
-
   document.getElementById('teamAShots').textContent=`Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent=`Shots: ${state.teamBShots}`;
-
   document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
   document.getElementById('period').textContent=`Period ${state.Period}`;
 
   const btn=document.getElementById('startStopBtn');
   btn.textContent=state.Running?"Stop":"Start";
-  btn.style.backgroundColor=state.Running?"#dc3545":"#28a745";
-  btn.classList.toggle("pulse", state.Running);
+  btn.style.background=state.Running?"#dc3545":"#28a745";
+  btn.classList.toggle("pulse",state.Running);
 }
 
 function formatTime(sec){
@@ -333,17 +287,61 @@ function formatTime(sec){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-/* timer + updates unchanged for brevity */
+function toggleClock(){
+  state.Running=!state.Running;
+  updateUI();
+  pushUpdate("Running",state.Running);
+}
+
+/* SCORE */
+function updateScore(team,change){
+  const key=team==="A"?"teamAScore":"teamBScore";
+  state[key]=Math.max(0,state[key]+change);
+  updateUI();
+  pushUpdate(key,state[key]);
+}
+
+/* SHOTS */
+function updateShots(team,change){
+  const key=team==="A"?"teamAShots":"teamBShots";
+  state[key]=Math.max(0,state[key]+change);
+  updateUI();
+  pushUpdate(key,state[key]);
+}
+
+/* CLOCK */
+function setClock(){
+  const input=prompt("MM:SS");
+  if(!input) return;
+  const [m,s]=input.split(":").map(Number);
+  state.TimerSeconds=m*60+s;
+  updateUI();
+  pushUpdate("TimerSeconds",state.TimerSeconds);
+}
+
+function setPeriod(){
+  const p=parseInt(prompt("Period"));
+  if(p>0){
+    state.Period=p;
+    updateUI();
+    pushUpdate("Period",p);
+  }
+}
+
+/* SYNC */
+async function pushUpdate(field,value){
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${value}`);
+}
+
+/* LOGOS + INIT */
 async function init(){
-  try{
-    const res=await fetch(SCRIPT_URL);
-    const data=await res.json();
-    Object.assign(state,data);
+  const res=await fetch(SCRIPT_URL);
+  const data=await res.json();
+  Object.assign(state,data);
 
-    document.getElementById("teamALogo").src=data.teamALogo;
-    document.getElementById("teamBLogo").src=data.teamBLogo;
+  document.getElementById("teamALogo").src=data.teamALogo;
+  document.getElementById("teamBLogo").src=data.teamBLogo;
 
-  } catch(e){}
   updateUI();
 }
 
