@@ -40,23 +40,24 @@ body {
   margin-top: 6px;
 }
 
+/* 🔥 Bigger shots text */
 .shots-row {
   display: flex;
   justify-content: space-between;
-  font-size: 16px;
+  font-size: 20px;
   margin-top: 4px;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
-/* BUTTON BASE */
+/* 🔥 Enhanced button press feel */
 button {
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.05s ease, opacity 0.05s ease;
+  transition: transform 0.04s ease, opacity 0.04s ease;
 }
 
 button:active {
-  transform: scale(0.92);
-  opacity: 0.75;
+  transform: scale(0.90);
+  opacity: 0.7;
 }
 
 .clock-section {
@@ -103,7 +104,7 @@ button:active {
   margin-bottom: 16px;
 }
 
-/* PULSE WHEN RUNNING */
+/* Pulse */
 .pulse {
   animation: pulseAnim 1.2s infinite;
 }
@@ -146,7 +147,7 @@ button:active {
   color: #fff;
 }
 
-/* SCORE ANIMATION */
+/* 🔥 Score animations */
 .score-pop {
   animation: pop 0.25s ease;
 }
@@ -157,23 +158,26 @@ button:active {
   100% { transform: scale(1); }
 }
 
+/* 🔥 Longer + bold feedback */
 .flash-green {
-  animation: flashGreen 0.3s ease;
+  animation: flashGreen 1s ease;
+  font-weight: bold;
 }
 
 .flash-red {
-  animation: flashRed 0.3s ease;
+  animation: flashRed 1s ease;
+  font-weight: bold;
 }
 
 @keyframes flashGreen {
   0% { color: #fff; }
-  50% { color: #28a745; }
+  40% { color: #28a745; }
   100% { color: #fff; }
 }
 
 @keyframes flashRed {
   0% { color: #fff; }
-  50% { color: #dc3545; }
+  40% { color: #dc3545; }
   100% { color: #fff; }
 }
 
@@ -187,9 +191,6 @@ button:active {
   font-size: 28px;
 }
 
-.modal {
-  display: none;
-}
 </style>
 </head>
 
@@ -250,13 +251,19 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEH
 let state = {teamAName:"Team A", teamAScore:0, teamAShots:0, teamBName:"Team B", teamBScore:0, teamBShots:0, Period:1, TimerSeconds:1200, Running:false};
 let timerInterval;
 
-/* ANIMATION HELPER */
+/* 🔥 Animation helper */
 function animateValue(id, change){
   const el = document.getElementById(id);
+
   el.classList.remove("score-pop","flash-green","flash-red");
   void el.offsetWidth;
+
   el.classList.add("score-pop");
   el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
 }
 
 function updateUI(){
