@@ -61,7 +61,6 @@ body {
   font-size: 18px;
 }
 
-/* TEAM LOGOS */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -509,9 +508,10 @@ function preselectTeams(){
   });
 }
 
-function updateTeams(){
+/* UPDATE TEAMS + REFRESH LOGOS */
+async function updateTeams(){
 
-  ["A","B"].forEach(team=>{
+  for (const team of ["A","B"]) {
 
     const dd = document.getElementById(`team${team}Dropdown`);
     const input = document.getElementById(`team${team}Custom`);
@@ -520,15 +520,30 @@ function updateTeams(){
       ? input.value.trim()
       : dd.value;
 
-    if(!name) return;
+    if(!name) continue;
 
-    const field = team==="A" ? "teamAName" : "teamBName";
+    const field = team==="A"
+      ? "teamAName"
+      : "teamBName";
 
     state[field] = name;
 
-    pushUpdate(field, name);
+    await pushUpdate(field, name);
+  }
 
-  });
+  /* REFRESH FROM GOOGLE SHEET */
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+
+    Object.assign(state, data);
+
+  } catch(err){
+
+    console.error("Refresh failed", err);
+
+  }
 
   updateUI();
 
@@ -564,7 +579,6 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
 
-  /* LOGOS */
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
