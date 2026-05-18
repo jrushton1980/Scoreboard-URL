@@ -71,24 +71,6 @@ body {
   background: #222;
 }
 
-/* PP STATE */
-.team-logo.pp-active {
-  border: 3px solid yellow;
-  box-shadow: 0 0 10px yellow;
-}
-
-/* PP FLAG */
-.pp-flag {
-  font-size: 12px;
-  color: black;
-  background: yellow;
-  padding: 2px 6px;
-  border-radius: 6px;
-  margin-top: 4px;
-  display: none;
-  font-weight: bold;
-}
-
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -318,8 +300,7 @@ input:disabled {
 
       <div id="teamAName" class="team-name">Team A</div>
 
-      <img id="teamALogo" class="team-logo" src="" onclick="togglePP('A')">
-      <div id="teamAPP" class="pp-flag">PP</div>
+      <img id="teamALogo" class="team-logo" src="">
 
       <div id="teamAScore" class="team-score">0</div>
 
@@ -335,8 +316,7 @@ input:disabled {
 
       <div id="teamBName" class="team-name">Team B</div>
 
-      <img id="teamBLogo" class="team-logo" src="" onclick="togglePP('B')">
-      <div id="teamBPP" class="pp-flag">PP</div>
+      <img id="teamBLogo" class="team-logo" src="">
 
       <div id="teamBScore" class="team-score">0</div>
 
@@ -406,6 +386,7 @@ input:disabled {
     <div class="modal-buttons">
       <button class="update-btn" onclick="updateTeams()">Update</button>
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+      <button class="cancel-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
   </div>
@@ -426,9 +407,7 @@ let state = {
   teamBLogo:"",
   Period:1,
   TimerSeconds:1200,
-  Running:false,
-  teamA_pp:false,
-  teamB_pp:false
+  Running:false
 };
 
 let timerInterval;
@@ -440,17 +419,6 @@ function openSettings(){
 
 function closeSettings(){
   document.getElementById("settingsModal").style.display = "none";
-}
-
-/* PP TOGGLE */
-function togglePP(team){
-
-  const key = team === "A" ? "teamA_pp" : "teamB_pp";
-  state[key] = !state[key];
-
-  pushUpdate(key, state[key]);
-
-  updateUI();
 }
 
 /* TEAM LIST */
@@ -567,6 +535,30 @@ function updateTeams(){
   closeSettings();
 }
 
+/* 🆕 RESET FUNCTION */
+function resetGame(){
+
+  state.teamAScore = 0;
+  state.teamBScore = 0;
+  state.teamAShots = 0;
+  state.teamBShots = 0;
+  state.Period = 1;
+  state.TimerSeconds = 900;
+  state.Running = false;
+
+  updateUI();
+
+  pushUpdate("teamAScore",0);
+  pushUpdate("teamBScore",0);
+  pushUpdate("teamAShots",0);
+  pushUpdate("teamBShots",0);
+  pushUpdate("Period",1);
+  pushUpdate("TimerSeconds",900);
+  pushUpdate("Running",false);
+
+  closeSettings();
+}
+
 /* ANIMATIONS */
 function animateValue(id, change){
 
@@ -599,13 +591,6 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  /* PP UI */
-  document.getElementById('teamALogo').classList.toggle("pp-active", state.teamA_pp);
-  document.getElementById('teamBLogo').classList.toggle("pp-active", state.teamB_pp);
-
-  document.getElementById('teamAPP').style.display = state.teamA_pp ? "inline-block" : "none";
-  document.getElementById('teamBPP').style.display = state.teamB_pp ? "inline-block" : "none";
-
   document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
@@ -613,7 +598,6 @@ function updateUI(){
 
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
-
   btn.classList.toggle("pulse", state.Running);
 }
 
@@ -635,7 +619,6 @@ function toggleClock(){
   }
 
   updateUI();
-
   pushUpdate("Running",state.Running);
 }
 
