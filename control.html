@@ -251,8 +251,15 @@ button:active {
   font-size: 16px;
 }
 
-.update-btn { background:#28a745; color:#fff; }
-.cancel-btn { background:#555; color:#fff; }
+.update-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: #fff;
+}
 </style>
 </head>
 
@@ -261,13 +268,14 @@ button:active {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
+
   <div class="team-row">
 
     <div class="team-block">
       <div id="teamAName" class="team-name">Team A</div>
       <img id="teamALogo" class="team-logo">
       <div id="teamAScore" class="team-score">0</div>
-      <div id="teamAShots" class="team-shots">Shots: 0</div>
+      <div id="teamAShots">Shots: 0</div>
     </div>
 
     <div style="font-size:32px; padding-top:90px;">-</div>
@@ -276,7 +284,7 @@ button:active {
       <div id="teamBName" class="team-name">Team B</div>
       <img id="teamBLogo" class="team-logo">
       <div id="teamBScore" class="team-score">0</div>
-      <div id="teamBShots" class="team-shots">Shots: 0</div>
+      <div id="teamBShots">Shots: 0</div>
     </div>
 
   </div>
@@ -311,14 +319,17 @@ button:active {
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
   <div class="modal-content">
+
     <h2>Settings</h2>
 
     <div class="modal-buttons">
-      <button class="update-btn" onclick="resetGame()">Reset</button>
+      <button class="update-btn" onclick="resetGame()">Reset Game</button>
       <button class="cancel-btn" onclick="closeSettings()">Close</button>
     </div>
+
   </div>
 </div>
 
@@ -343,8 +354,10 @@ let timerInterval;
 function openSettings(){ document.getElementById("settingsModal").style.display="flex"; }
 function closeSettings(){ document.getElementById("settingsModal").style.display="none"; }
 
-/* RESET (FIXED CLEAN VERSION) */
+/* RESET (ONLY ADDITION) */
 function resetGame(){
+
+  clearInterval(timerInterval);
 
   state.teamAScore = 0;
   state.teamBScore = 0;
@@ -353,8 +366,6 @@ function resetGame(){
   state.Period = 1;
   state.TimerSeconds = 1200;
   state.Running = false;
-
-  clearInterval(timerInterval);
 
   updateUI();
 
@@ -369,7 +380,7 @@ function resetGame(){
   closeSettings();
 }
 
-/* ANIMATION (UNCHANGED CORE LOGIC) */
+/* ANIMATION (UNCHANGED) */
 function animateValue(id, change){
 
   const el = document.getElementById(id);
@@ -398,17 +409,15 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = "Shots: " + state.teamAShots;
   document.getElementById('teamBShots').textContent = "Shots: " + state.teamBShots;
 
-  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+  document.getElementById('timer').textContent =
+    String(Math.floor(state.TimerSeconds/60)).padStart(2,'0') + ":" +
+    String(state.TimerSeconds%60).padStart(2,'0');
+
   document.getElementById('period').textContent = "Period " + state.Period;
 
   const btn = document.getElementById('startStopBtn');
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.background = state.Running ? "#dc3545" : "#28a745";
-  btn.classList.toggle("pulse", state.Running);
-}
-
-function formatTime(sec){
-  return String(Math.floor(sec/60)).padStart(2,'0') + ":" + String(sec%60).padStart(2,'0');
 }
 
 /* SCORE */
@@ -431,6 +440,7 @@ function updateShots(team,change){
 
 /* TIMER */
 function toggleClock(){
+
   state.Running = !state.Running;
 
   if(state.Running){
@@ -449,7 +459,7 @@ function toggleClock(){
   pushUpdate("Running",state.Running);
 }
 
-/* CLOCK */
+/* CONTROLS */
 function setClock(){
   const input = prompt("MM:SS");
   if(!input) return;
@@ -474,10 +484,9 @@ function pushUpdate(field,value){
 }
 
 /* INIT */
-function init(){
-  updateUI();
-}
-init();
+function updateTeams(){ updateUI(); }
+
+updateUI();
 </script>
 
 </body>
