@@ -44,6 +44,7 @@ body {
   border-radius:15px; 
   padding:10px 15px; 
   z-index:1; 
+  transition: all 0.2s ease;
 }
 
 .team-info { 
@@ -67,6 +68,8 @@ body {
   font-size: var(--font-team-name-size); 
   font-weight:bold; 
   color:#fff; 
+  display:flex;
+  align-items:center;
 }
 
 .shots { 
@@ -114,19 +117,42 @@ body {
 
 #teamAcard { margin-right:70px; }
 #teamBcard { margin-left:70px; }
+
+/* PP STYLES */
+.pp-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #000;
+  background: #ffd400;
+  border-radius: 4px;
+}
+
+.pp-active {
+  outline: 2px solid #ffd400;
+  box-shadow: 0 0 12px rgba(255, 212, 0, 0.5);
+}
 </style>
 </head>
 
 <body>
 <div class="scoreboard-wrapper">
+
+  <!-- TEAM A -->
   <div class="team-card" id="teamAcard">
     <img class="team-logo" id="teamALogo">
     <div class="team-info">
-      <div class="team-name" id="teamAName"></div>
+      <div class="team-name">
+        <span id="teamAName"></span>
+        <span id="teamAPP" class="pp-badge" style="display:none;">PP</span>
+      </div>
       <div class="shots" id="teamAShots"></div>
     </div>
   </div>
 
+  <!-- SCORE -->
   <div class="central-score">
     <div class="score-row">
       <span id="scoreA">0</span>
@@ -136,13 +162,18 @@ body {
     <div class="period-clock" id="periodClock">20:00 | Per 1</div>
   </div>
 
+  <!-- TEAM B -->
   <div class="team-card" id="teamBcard">
     <img class="team-logo" id="teamBLogo">
     <div class="team-info">
-      <div class="team-name" id="teamBName"></div>
+      <div class="team-name">
+        <span id="teamBName"></span>
+        <span id="teamBPP" class="pp-badge" style="display:none;">PP</span>
+      </div>
       <div class="shots" id="teamBShots"></div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -153,42 +184,43 @@ let running = false;
 let period = 1;
 let lastRunningState = null;
 
-// PP states (NEW)
+// PP STATE
 let teamA_pp = false;
 let teamB_pp = false;
 
-// Fetch data from Google Apps Script web app
 async function refresh() {
   try {
     const res = await fetch(DATA_URL + "?t=" + Date.now());
     const data = await res.json();
 
-    // Team data
+    // TEAM A
     document.getElementById("teamALogo").src = data.teamALogo;
     document.getElementById("teamAName").innerText = data.teamAName;
     document.getElementById("teamAShots").innerText = `Shots: ${data.teamAShots}`;
     document.getElementById("teamAcard").style.backgroundColor = data.teamAColor + "33";
 
+    // TEAM B
     document.getElementById("teamBLogo").src = data.teamBLogo;
     document.getElementById("teamBName").innerText = data.teamBName;
     document.getElementById("teamBShots").innerText = `Shots: ${data.teamBShots}`;
     document.getElementById("teamBcard").style.backgroundColor = data.teamBColor + "33";
 
+    // SCORE
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
 
-    // PP FLAGS (NEW)
+    // PP VALUES
     teamA_pp = data.teamA_pp === true || data.teamA_pp === "TRUE";
     teamB_pp = data.teamB_pp === true || data.teamB_pp === "TRUE";
 
-    console.log("PP Status:", {
-      teamA_pp,
-      teamB_pp,
-      rawA: data.teamA_pp,
-      rawB: data.teamB_pp
-    });
+    // APPLY PP UI
+    document.getElementById("teamAPP").style.display = teamA_pp ? "inline-block" : "none";
+    document.getElementById("teamBPP").style.display = teamB_pp ? "inline-block" : "none";
 
-    // Timer + period
+    document.getElementById("teamAcard").classList.toggle("pp-active", teamA_pp);
+    document.getElementById("teamBcard").classList.toggle("pp-active", teamB_pp);
+
+    // TIMER / PERIOD
     period = data.Period;
     const newRunning = data.Running === true || data.Running === "TRUE";
 
@@ -206,16 +238,15 @@ async function refresh() {
   }
 }
 
-// Update the on-screen clock
 function updateClockDisplay() {
   if (timerSeconds < 0) timerSeconds = 0;
   const min = Math.floor(timerSeconds / 60);
   const sec = timerSeconds % 60;
+
   document.getElementById("periodClock").innerText =
-    `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} | Per ${period}`;
+    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')} | Per ${period}`;
 }
 
-// Local ticking loop
 setInterval(() => {
   if (running && timerSeconds > 0) {
     timerSeconds--;
@@ -223,9 +254,9 @@ setInterval(() => {
   }
 }, 1000);
 
-// Refresh data every 1.5s
 setInterval(refresh, 1500);
 refresh();
 </script>
+
 </body>
 </html>
