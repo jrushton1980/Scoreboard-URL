@@ -416,17 +416,58 @@ function handleDrop(team){
 
 async function updateTeams(){
 
-  const A = document.getElementById("teamADropdown").value;
-  const B = document.getElementById("teamBDropdown").value;
+  for (const team of ["A","B"]) {
 
-  state.teamAName = A;
-  state.teamBName = B;
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
 
-  push("teamAName",A);
-  push("teamBName",B);
+    const name = dd.value === "__custom__"
+      ? input.value.trim()
+      : dd.value;
 
+    if(!name) continue;
+
+    const field = team==="A"
+      ? "teamAName"
+      : "teamBName";
+
+    state[field] = name;
+  }
+
+  // 1. update UI immediately
   updateUI();
+
+  // 2. CLOSE MODAL IMMEDIATELY (this is the key fix)
   closeSettings();
+
+  // 3. defer slow network work so UI doesn't block
+  setTimeout(async () => {
+
+    try {
+
+      // push updates
+      for (const team of ["A","B"]) {
+
+        const field = team==="A"
+          ? "teamAName"
+          : "teamBName";
+
+        await pushUpdate(field, state[field]);
+      }
+
+      // refresh full state (logos etc)
+      const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+      const data = await res.json();
+
+      Object.assign(state, data);
+
+      updateUI();
+
+    } catch(err) {
+      console.error("Update refresh failed:", err);
+    }
+
+  }, 50);
 }
 
 /* UTIL */
