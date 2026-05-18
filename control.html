@@ -295,40 +295,26 @@ input:disabled {
 
   <div class="team-row">
 
-    <!-- TEAM A -->
     <div class="team-block">
-
       <div id="teamAName" class="team-name">Team A</div>
-
       <img id="teamALogo" class="team-logo" src="">
-
       <div id="teamAScore" class="team-score">0</div>
-
       <div id="teamAShots" class="team-shots">Shots: 0</div>
-
     </div>
 
-    <!-- DASH -->
     <div style="font-size:32px; padding-top:90px;">-</div>
 
-    <!-- TEAM B -->
     <div class="team-block">
-
       <div id="teamBName" class="team-name">Team B</div>
-
       <img id="teamBLogo" class="team-logo" src="">
-
       <div id="teamBScore" class="team-score">0</div>
-
       <div id="teamBShots" class="team-shots">Shots: 0</div>
-
     </div>
 
   </div>
 </div>
 
 <div class="clock-section">
-
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -337,7 +323,6 @@ input:disabled {
   </div>
 
   <button onclick="setClock()">Clock</button>
-
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -362,9 +347,7 @@ input:disabled {
 
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
-
   <div class="modal-content">
-
     <h2>Team Setup</h2>
 
     <div class="modal-section">
@@ -389,7 +372,6 @@ input:disabled {
     </div>
 
   </div>
-
 </div>
 
 <script>
@@ -411,105 +393,29 @@ let state = {
 
 let timerInterval;
 
-/* SETTINGS */
-function openSettings(){
-  document.getElementById("settingsModal").style.display = "flex";
-}
+/* FORCE LOGO REFRESH (FIX FOR IOS CACHE) */
+function refreshLogos(){
 
-function closeSettings(){
-  document.getElementById("settingsModal").style.display = "none";
-}
+  const a = document.getElementById("teamALogo");
+  const b = document.getElementById("teamBLogo");
 
-/* TEAM LIST */
-async function loadTeamList(){
+  if(state.teamALogo){
+    a.src = state.teamALogo + "?t=" + Date.now();
+  }
 
-  try {
-
-    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
-    const list = await res.json();
-
-    const uniqueList = [...new Set(list)];
-
-    ["A","B"].forEach(team=>{
-
-      const dd = document.getElementById(`team${team}Dropdown`);
-
-      dd.innerHTML = "";
-
-      const customOpt = document.createElement("option");
-      customOpt.value = "__custom__";
-      customOpt.textContent = "-- Custom --";
-      dd.appendChild(customOpt);
-
-      uniqueList.forEach(teamName=>{
-
-        if(teamName !== "-- Custom --"){
-
-          const opt = document.createElement("option");
-          opt.value = teamName;
-          opt.textContent = teamName;
-          dd.appendChild(opt);
-
-        }
-
-      });
-
-    });
-
-    preselectTeams();
-
-  } catch(err){
-    console.error("Failed loading team list", err);
+  if(state.teamBLogo){
+    b.src = state.teamBLogo + "?t=" + Date.now();
   }
 }
 
-function handleDropdownChange(team){
+/* SETTINGS */
+function openSettings(){ document.getElementById("settingsModal").style.display = "flex"; }
+function closeSettings(){ document.getElementById("settingsModal").style.display = "none"; }
 
-  const dd = document.getElementById(`team${team}Dropdown`);
-  const input = document.getElementById(`team${team}Custom`);
+/* UPDATE TEAMS */
+async function updateTeams(){
 
-  input.disabled = dd.value !== "__custom__";
-}
-
-function preselectTeams(){
-
-  ["A","B"].forEach(team=>{
-
-    const dd = document.getElementById(`team${team}Dropdown`);
-    const input = document.getElementById(`team${team}Custom`);
-
-    const current = state[team==="A" ? "teamAName" : "teamBName"];
-
-    let found = false;
-
-    for(let i=0;i<dd.options.length;i++){
-
-      if(dd.options[i].value === current){
-
-        dd.selectedIndex = i;
-        found = true;
-        break;
-
-      }
-
-    }
-
-    if(!found){
-
-      dd.value = "__custom__";
-      input.value = current;
-      input.disabled = false;
-
-    } else {
-
-      input.disabled = dd.value !== "__custom__";
-
-    }
-
-  });
-}
-
-function updateTeams(){
+  const promises = [];
 
   ["A","B"].forEach(team=>{
 
@@ -526,33 +432,26 @@ function updateTeams(){
 
     state[field] = name;
 
-    pushUpdate(field, name);
+    promises.push(
+      fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(name)}`)
+    );
   });
 
+  await Promise.all(promises);
+
+  await new Promise(r => setTimeout(r, 150));
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    Object.assign(state, data);
+  } catch(e){
+    console.error(e);
+  }
+
   updateUI();
+  refreshLogos();
   closeSettings();
-
-  // 🔥 FORCE REFRESH FROM GOOGLE SHEET (fixes logo + sync delay)
-  setTimeout(() => {
-    init();   // re-fetch full state including logos
-  }, 150);
-}
-
-/* ANIMATIONS */
-function animateValue(id, change){
-
-  const el = document.getElementById(id);
-
-  el.classList.remove("score-pop","flash-green","flash-red");
-
-  void el.offsetWidth;
-
-  el.classList.add("score-pop");
-  el.classList.add(change > 0 ? "flash-green" : "flash-red");
-
-  setTimeout(()=>{
-    el.classList.remove("flash-green","flash-red");
-  },1000);
 }
 
 /* UI */
@@ -567,159 +466,29 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
 
-  /* LOGOS */
-  document.getElementById('teamALogo').src = state.teamALogo || "";
-  document.getElementById('teamBLogo').src = state.teamBLogo || "";
+  document.getElementById('timer').textContent =
+    Math.floor(state.TimerSeconds/60).toString().padStart(2,'0') + ":" +
+    (state.TimerSeconds%60).toString().padStart(2,'0');
 
-  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
   const btn = document.getElementById('startStopBtn');
-
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
-
   btn.classList.toggle("pulse", state.Running);
-}
-
-function formatTime(sec){
-
-  const m = Math.floor(sec/60);
-  const s = sec%60;
-
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-/* TIMER */
-function toggleClock(){
-
-  state.Running = !state.Running;
-
-  if(state.Running){
-    startTimer();
-  } else {
-    stopTimer();
-  }
-
-  updateUI();
-
-  pushUpdate("Running",state.Running);
-}
-
-function startTimer(){
-
-  clearInterval(timerInterval);
-
-  timerInterval = setInterval(()=>{
-
-    if(state.TimerSeconds > 0){
-
-      state.TimerSeconds--;
-
-      document.getElementById('timer').textContent =
-        formatTime(state.TimerSeconds);
-
-      pushUpdate("TimerSeconds",state.TimerSeconds);
-
-    }
-
-  },1000);
-}
-
-function stopTimer(){
-  clearInterval(timerInterval);
-}
-
-/* CONTROLS */
-function setClock(){
-
-  const input = prompt("Enter time (MM:SS):");
-
-  if(input && /^\d{1,2}:\d{2}$/.test(input)){
-
-    const [m,s] = input.split(':').map(Number);
-
-    state.TimerSeconds = m*60+s;
-
-    updateUI();
-
-    pushUpdate("TimerSeconds",state.TimerSeconds);
-  }
-}
-
-function setPeriod(){
-
-  const val = parseInt(prompt("Enter period number:"));
-
-  if(!isNaN(val) && val > 0){
-
-    state.Period = val;
-
-    updateUI();
-
-    pushUpdate("Period",val);
-  }
-}
-
-function updateScore(team,change){
-
-  const key = team==="A" ? "teamAScore" : "teamBScore";
-  const el = team==="A" ? "teamAScore" : "teamBScore";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-function updateShots(team,change){
-
-  const key = team==="A" ? "teamAShots" : "teamBShots";
-  const el = team==="A" ? "teamAShots" : "teamBShots";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-/* GOOGLE SYNC */
-async function pushUpdate(field,value){
-
-  await fetch(
-    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
-  );
 }
 
 /* INIT */
 async function init(){
-
-  try {
-
+  try{
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-
     const data = await res.json();
-
     Object.assign(state,data);
-
-  } catch(e){
-
-    console.error("Init failed", e);
-  }
-
+  } catch(e){}
   updateUI();
-
-  await loadTeamList();
 }
-
 init();
-</script>
 
+</script>
 </body>
 </html>
