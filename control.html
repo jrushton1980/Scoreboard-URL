@@ -526,28 +526,45 @@ async function updateTeams(){
       ? "teamAName"
       : "teamBName";
 
+    /* instant local update */
     state[field] = name;
-
-    await pushUpdate(field, name);
   }
 
-  /* REFRESH FROM GOOGLE SHEET */
-  try {
-
-    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-    const data = await res.json();
-
-    Object.assign(state, data);
-
-  } catch(err){
-
-    console.error("Refresh failed", err);
-
-  }
-
+  /* update UI immediately */
   updateUI();
 
+  /* close instantly */
   closeSettings();
+
+  /* send updates in background */
+  for (const team of ["A","B"]) {
+
+    const field = team==="A"
+      ? "teamAName"
+      : "teamBName";
+
+    await pushUpdate(field, state[field]);
+  }
+
+  /* background refresh for logos */
+  setTimeout(async ()=>{
+
+    try {
+
+      const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+      const data = await res.json();
+
+      Object.assign(state, data);
+
+      updateUI();
+
+    } catch(err){
+
+      console.error("Background refresh failed", err);
+
+    }
+
+  }, 300);
 }
 
 /* ANIMATIONS */
