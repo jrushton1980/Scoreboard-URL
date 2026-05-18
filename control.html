@@ -348,6 +348,7 @@ input:disabled {
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
   <div class="modal-content">
+
     <h2>Team Setup</h2>
 
     <div class="modal-section">
@@ -393,19 +394,14 @@ let state = {
 
 let timerInterval;
 
-/* FORCE LOGO REFRESH (FIX FOR IOS CACHE) */
+/* ONLY ADDITION: LOGO REFRESH FUNCTION */
 function refreshLogos(){
 
   const a = document.getElementById("teamALogo");
   const b = document.getElementById("teamBLogo");
 
-  if(state.teamALogo){
-    a.src = state.teamALogo + "?t=" + Date.now();
-  }
-
-  if(state.teamBLogo){
-    b.src = state.teamBLogo + "?t=" + Date.now();
-  }
+  a.src = state.teamALogo || "";
+  b.src = state.teamBLogo || "";
 }
 
 /* SETTINGS */
