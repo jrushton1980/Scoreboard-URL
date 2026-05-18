@@ -116,6 +116,7 @@ body {
 #teamBcard { margin-left:70px; }
 </style>
 </head>
+
 <body>
 <div class="scoreboard-wrapper">
   <div class="team-card" id="teamAcard">
@@ -152,10 +153,14 @@ let running = false;
 let period = 1;
 let lastRunningState = null;
 
+// PP states (NEW)
+let teamA_pp = false;
+let teamB_pp = false;
+
 // Fetch data from Google Apps Script web app
 async function refresh() {
   try {
-    const res = await fetch(DATA_URL + "?t=" + Date.now()); // prevent caching
+    const res = await fetch(DATA_URL + "?t=" + Date.now());
     const data = await res.json();
 
     // Team data
@@ -172,11 +177,21 @@ async function refresh() {
     document.getElementById("scoreA").innerText = data.teamAScore;
     document.getElementById("scoreB").innerText = data.teamBScore;
 
+    // PP FLAGS (NEW)
+    teamA_pp = data.teamA_pp === true || data.teamA_pp === "TRUE";
+    teamB_pp = data.teamB_pp === true || data.teamB_pp === "TRUE";
+
+    console.log("PP Status:", {
+      teamA_pp,
+      teamB_pp,
+      rawA: data.teamA_pp,
+      rawB: data.teamB_pp
+    });
+
     // Timer + period
     period = data.Period;
     const newRunning = data.Running === true || data.Running === "TRUE";
 
-    // Always update timerSeconds from sheet when running changes or first load
     const newTimerValue = parseInt(data.TimerSeconds) || 0;
     if (lastRunningState !== newRunning || !running) {
       timerSeconds = newTimerValue;
