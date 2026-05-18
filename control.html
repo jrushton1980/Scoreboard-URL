@@ -17,7 +17,7 @@ body {
   align-items: center;
 }
 
-/* ✅ CENTERED + CLICKABLE */
+/* SETTINGS BUTTON */
 .settings-btn {
   position: fixed;
   top: 10px;
@@ -28,6 +28,7 @@ body {
   color: #fff;
   font-size: 28px;
   z-index: 9999;
+  cursor: pointer;
 }
 
 /* SCOREBOARD */
@@ -39,7 +40,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* STACKED TEAMS */
 .team-row {
   display: flex;
   justify-content: space-between;
@@ -67,6 +67,18 @@ body {
 .team-shots {
   font-size: 20px;
   opacity: 0.9;
+}
+
+/* BUTTON FEEDBACK */
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.04s ease, opacity 0.04s ease;
+}
+
+button:active {
+  transform: scale(0.90);
+  opacity: 0.7;
 }
 
 /* CLOCK */
@@ -115,6 +127,17 @@ body {
   margin-bottom: 16px;
 }
 
+/* PULSE */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 /* CONTROLS */
 .team-controls {
   display: flex;
@@ -148,29 +171,7 @@ body {
   color: #fff;
 }
 
-/* BUTTON PRESS */
-button {
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.04s ease, opacity 0.04s ease;
-}
-
-button:active {
-  transform: scale(0.90);
-  opacity: 0.7;
-}
-
-/* PULSE */
-.pulse {
-  animation: pulseAnim 1.2s infinite;
-}
-
-@keyframes pulseAnim {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* SCORE ANIMATIONS */
+/* ANIMATIONS */
 .score-pop {
   animation: pop 0.25s ease;
 }
@@ -203,27 +204,73 @@ button:active {
   100% { color: #fff; }
 }
 
-/* MODAL */
-#settingsModal {
+/* SETTINGS MODAL */
+.modal {
   display: none;
   position: fixed;
-  top: 0;
+  z-index: 10000;
   left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.8);
   justify-content: center;
   align-items: center;
-  z-index: 10000;
 }
 
 .modal-content {
-  background: #1e1e1e;
+  background: #222;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   width: 90%;
-  max-width: 400px;
+  max-width: 500px;
   text-align: center;
+}
+
+.modal-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.team-setup {
+  flex: 1;
+}
+
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+input:disabled {
+  background-color: #444;
+  color: #aaa;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.update-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: #fff;
 }
 </style>
 </head>
@@ -254,10 +301,12 @@ button:active {
 
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
+
   <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
+
   <button onclick="setClock()">Clock</button>
 </div>
 
@@ -270,6 +319,7 @@ button:active {
     <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
   </div>
+
   <div class="team-column">
     <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
@@ -278,11 +328,33 @@ button:active {
   </div>
 </div>
 
-<!-- SETTINGS -->
-<div id="settingsModal">
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="modal">
   <div class="modal-content">
-    <h2>Settings</h2>
-    <button onclick="closeSettings()">Close</button>
+
+    <h2>Team Setup</h2>
+
+    <div class="modal-section">
+
+      <div class="team-setup">
+        <h3>Team A</h3>
+        <select id="teamADropdown" onchange="handleDropdownChange('A')"></select>
+        <input id="teamACustom" type="text" placeholder="Custom Team Name">
+      </div>
+
+      <div class="team-setup">
+        <h3>Team B</h3>
+        <select id="teamBDropdown" onchange="handleDropdownChange('B')"></select>
+        <input id="teamBCustom" type="text" placeholder="Custom Team Name">
+      </div>
+
+    </div>
+
+    <div class="modal-buttons">
+      <button class="update-btn" onclick="updateTeams()">Update</button>
+      <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+    </div>
+
   </div>
 </div>
 
@@ -305,61 +377,198 @@ let timerInterval;
 
 /* SETTINGS */
 function openSettings(){
-  document.getElementById("settingsModal").style.display="flex";
-}
-function closeSettings(){
-  document.getElementById("settingsModal").style.display="none";
+  document.getElementById("settingsModal").style.display = "flex";
 }
 
-/* ANIMATION */
+function closeSettings(){
+  document.getElementById("settingsModal").style.display = "none";
+}
+
+/* TEAM LIST */
+async function loadTeamList(){
+
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
+    const list = await res.json();
+
+    const uniqueList = [...new Set(list)];
+
+    ["A","B"].forEach(team=>{
+
+      const dd = document.getElementById(`team${team}Dropdown`);
+
+      dd.innerHTML = "";
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "__custom__";
+      customOpt.textContent = "-- Custom --";
+      dd.appendChild(customOpt);
+
+      uniqueList.forEach(teamName=>{
+        if(teamName !== "-- Custom --"){
+          const opt = document.createElement("option");
+          opt.value = teamName;
+          opt.textContent = teamName;
+          dd.appendChild(opt);
+        }
+      });
+
+    });
+
+    preselectTeams();
+
+  } catch(err){
+    console.error("Failed loading team list", err);
+  }
+}
+
+function handleDropdownChange(team){
+
+  const dd = document.getElementById(`team${team}Dropdown`);
+  const input = document.getElementById(`team${team}Custom`);
+
+  input.disabled = dd.value !== "__custom__";
+}
+
+function preselectTeams(){
+
+  ["A","B"].forEach(team=>{
+
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const current = state[team==="A" ? "teamAName" : "teamBName"];
+
+    let found = false;
+
+    for(let i=0;i<dd.options.length;i++){
+
+      if(dd.options[i].value === current){
+
+        dd.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+
+    if(!found){
+      dd.value = "__custom__";
+      input.value = current;
+      input.disabled = false;
+    } else {
+      input.disabled = dd.value !== "__custom__";
+    }
+
+  });
+}
+
+function updateTeams(){
+
+  ["A","B"].forEach(team=>{
+
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const name = dd.value === "__custom__"
+      ? input.value.trim()
+      : dd.value;
+
+    if(!name) return;
+
+    const field = team==="A" ? "teamAName" : "teamBName";
+
+    state[field] = name;
+
+    pushUpdate(field, name);
+
+  });
+
+  updateUI();
+  closeSettings();
+}
+
+/* ANIMATIONS */
 function animateValue(id, change){
+
   const el = document.getElementById(id);
+
   el.classList.remove("score-pop","flash-green","flash-red");
+
   void el.offsetWidth;
+
   el.classList.add("score-pop");
   el.classList.add(change > 0 ? "flash-green" : "flash-red");
-  setTimeout(()=>{ el.classList.remove("flash-green","flash-red"); },1000);
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
 }
 
 /* UI */
 function updateUI(){
-  document.getElementById('teamAName').textContent=state.teamAName;
-  document.getElementById('teamBName').textContent=state.teamBName;
-  document.getElementById('teamAScore').textContent=state.teamAScore;
-  document.getElementById('teamBScore').textContent=state.teamBScore;
-  document.getElementById('teamAShots').textContent=`Shots: ${state.teamAShots}`;
-  document.getElementById('teamBShots').textContent=`Shots: ${state.teamBShots}`;
-  document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
-  document.getElementById('period').textContent=`Period ${state.Period}`;
 
-  const btn=document.getElementById('startStopBtn');
-  btn.textContent=state.Running?"Stop":"Start";
-  btn.style.backgroundColor=state.Running?"#dc3545":"#28a745";
+  document.getElementById('teamAName').textContent = state.teamAName;
+  document.getElementById('teamBName').textContent = state.teamBName;
+
+  document.getElementById('teamAScore').textContent = state.teamAScore;
+  document.getElementById('teamBScore').textContent = state.teamBScore;
+
+  document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
+  document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
+
+  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+  document.getElementById('period').textContent = `Period ${state.Period}`;
+
+  const btn = document.getElementById('startStopBtn');
+
+  btn.textContent = state.Running ? "Stop" : "Start";
+  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+
   btn.classList.toggle("pulse", state.Running);
 }
 
 function formatTime(sec){
-  const m=Math.floor(sec/60);
-  const s=sec%60;
+
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
 /* TIMER */
 function toggleClock(){
-  state.Running=!state.Running;
-  if(state.Running) startTimer(); else stopTimer();
+
+  state.Running = !state.Running;
+
+  if(state.Running){
+    startTimer();
+  } else {
+    stopTimer();
+  }
+
   updateUI();
+
   pushUpdate("Running",state.Running);
 }
 
 function startTimer(){
+
   clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    if(state.TimerSeconds>0){
+
+  timerInterval = setInterval(()=>{
+
+    if(state.TimerSeconds > 0){
+
       state.TimerSeconds--;
-      document.getElementById('timer').textContent=formatTime(state.TimerSeconds);
+
+      document.getElementById('timer').textContent =
+        formatTime(state.TimerSeconds);
+
       pushUpdate("TimerSeconds",state.TimerSeconds);
+
     }
+
   },1000);
 }
 
@@ -369,68 +578,90 @@ function stopTimer(){
 
 /* CONTROLS */
 function setClock(){
-  const input=prompt("Enter time (MM:SS):");
+
+  const input = prompt("Enter time (MM:SS):");
+
   if(input && /^\d{1,2}:\d{2}$/.test(input)){
-    const [m,s]=input.split(':').map(Number);
-    state.TimerSeconds=m*60+s;
+
+    const [m,s] = input.split(':').map(Number);
+
+    state.TimerSeconds = m*60+s;
+
     updateUI();
+
     pushUpdate("TimerSeconds",state.TimerSeconds);
   }
 }
 
 function setPeriod(){
-  const val=parseInt(prompt("Enter period number:"));
-  if(!isNaN(val)&&val>0){
-    state.Period=val;
+
+  const val = parseInt(prompt("Enter period number:"));
+
+  if(!isNaN(val) && val > 0){
+
+    state.Period = val;
+
     updateUI();
+
     pushUpdate("Period",val);
   }
 }
 
 function updateScore(team,change){
-  tapFeedback();
-  const key=team==="A"?"teamAScore":"teamBScore";
-  const el=team==="A"?"teamAScore":"teamBScore";
-  state[key]=Math.max(0,state[key]+change);
+
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
   updateUI();
+
   animateValue(el,change);
+
   pushUpdate(key,state[key]);
 }
 
 function updateShots(team,change){
-  const key=team==="A"?"teamAShots":"teamBShots";
-  const el=team==="A"?"teamAShots":"teamBShots";
-  state[key]=Math.max(0,state[key]+change);
+
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
   updateUI();
+
   animateValue(el,change);
+
   pushUpdate(key,state[key]);
 }
 
-function tapFeedback() {
-  /* Android vibration */
-  if (navigator.vibrate) {
-    navigator.vibrate(15);
-  }
-  /* iOS experimental haptics */
-  if (window.navigator && window.navigator.hapticFeedback) {
-    window.navigator.hapticFeedback();
-  }
-}
-  
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
+
+  await fetch(
+    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
+  );
 }
 
+/* INIT */
 async function init(){
-  try{
-    const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+
     const data = await res.json();
+
     Object.assign(state,data);
+
   } catch(e){
+
     console.error("Init failed", e);
   }
+
   updateUI();
+
+  await loadTeamList();
 }
 
 init();
