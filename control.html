@@ -386,6 +386,7 @@ input:disabled {
     <div class="modal-buttons">
       <button class="update-btn" onclick="updateTeams()">Update</button>
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+      <button class="cancel-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
   </div>
@@ -531,6 +532,29 @@ function updateTeams(){
   });
 
   updateUI();
+  closeSettings();
+}
+
+/* 🆕 RESET FUNCTION */
+function resetGame(){
+
+  state.teamAScore = 0;
+  state.teamBScore = 0;
+  state.teamAShots = 0;
+  state.teamBShots = 0;
+  state.Period = 1;
+  state.TimerSeconds = 1200;
+  state.Running = false;
+
+  updateUI();
+
+  pushUpdate("teamAScore",0);
+  pushUpdate("teamBScore",0);
+  pushUpdate("teamAShots",0);
+  pushUpdate("teamBShots",0);
+  pushUpdate("Period",1);
+  pushUpdate("TimerSeconds",1200);
+  pushUpdate("Running",false);
 
   closeSettings();
 }
@@ -564,7 +588,6 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
 
-  /* LOGOS */
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
@@ -575,15 +598,12 @@ function updateUI(){
 
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
-
   btn.classList.toggle("pulse", state.Running);
 }
 
 function formatTime(sec){
-
   const m = Math.floor(sec/60);
   const s = sec%60;
-
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
@@ -599,7 +619,6 @@ function toggleClock(){
   }
 
   updateUI();
-
   pushUpdate("Running",state.Running);
 }
 
@@ -658,34 +677,6 @@ function setPeriod(){
   }
 }
 
-function updateScore(team,change){
-
-  const key = team==="A" ? "teamAScore" : "teamBScore";
-  const el = team==="A" ? "teamAScore" : "teamBScore";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-function updateShots(team,change){
-
-  const key = team==="A" ? "teamAShots" : "teamBShots";
-  const el = team==="A" ? "teamAShots" : "teamBShots";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
 
@@ -706,7 +697,6 @@ async function init(){
     Object.assign(state,data);
 
   } catch(e){
-
     console.error("Init failed", e);
   }
 
