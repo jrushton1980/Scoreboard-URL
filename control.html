@@ -295,26 +295,40 @@ input:disabled {
 
   <div class="team-row">
 
+    <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
+
       <img id="teamALogo" class="team-logo" src="">
+
       <div id="teamAScore" class="team-score">0</div>
+
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
+    <!-- DASH -->
     <div style="font-size:32px; padding-top:90px;">-</div>
 
+    <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
+
       <img id="teamBLogo" class="team-logo" src="">
+
       <div id="teamBScore" class="team-score">0</div>
+
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
   </div>
 </div>
 
 <div class="clock-section">
+
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -323,6 +337,7 @@ input:disabled {
   </div>
 
   <button onclick="setClock()">Clock</button>
+
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -371,7 +386,6 @@ input:disabled {
     <div class="modal-buttons">
       <button class="update-btn" onclick="updateTeams()">Update</button>
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
-      <button class="cancel-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
   </div>
@@ -516,44 +530,9 @@ function updateTeams(){
 
   });
 
-updateUI();
-closeSettings();
-
-setTimeout(() => {
-  refreshApp();
-}, 300);
-}
-
-/* ⭐ NEW RESET FUNCTION */
-async function resetGame(){
-
-  if(!confirm("Reset game?")) return;
-
-  stopTimer();
-
-  state.teamAScore = 0;
-  state.teamBScore = 0;
-  state.teamAShots = 0;
-  state.teamBShots = 0;
-  state.Period = 1;
-  state.TimerSeconds = 900;
-  state.Running = false;
-
-  await Promise.all([
-    pushUpdate("teamAScore",0),
-    pushUpdate("teamBScore",0),
-    pushUpdate("teamAShots",0),
-    pushUpdate("teamBShots",0),
-    pushUpdate("Period",1),
-    pushUpdate("TimerSeconds",900),
-    pushUpdate("Running",false)
-  ]);
-
   updateUI();
 
-  setTimeout(() => {
-    refreshApp();
-  }, 300);
+  closeSettings();
 }
 
 /* ANIMATIONS */
@@ -585,6 +564,7 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
 
+  /* LOGOS */
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
@@ -592,14 +572,18 @@ function updateUI(){
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
   const btn = document.getElementById('startStopBtn');
+
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+
   btn.classList.toggle("pulse", state.Running);
 }
 
 function formatTime(sec){
+
   const m = Math.floor(sec/60);
   const s = sec%60;
+
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
@@ -608,10 +592,14 @@ function toggleClock(){
 
   state.Running = !state.Running;
 
-  if(state.Running) startTimer();
-  else stopTimer();
+  if(state.Running){
+    startTimer();
+  } else {
+    stopTimer();
+  }
 
   updateUI();
+
   pushUpdate("Running",state.Running);
 }
 
@@ -629,6 +617,7 @@ function startTimer(){
         formatTime(state.TimerSeconds);
 
       pushUpdate("TimerSeconds",state.TimerSeconds);
+
     }
 
   },1000);
@@ -669,28 +658,40 @@ function setPeriod(){
   }
 }
 
+function updateScore(team,change){
+
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+function updateShots(team,change){
+
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
 
   await fetch(
     `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
   );
-}
-
-async function refreshApp(){
-
-  try {
-    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-    const data = await res.json();
-
-    Object.assign(state, data);
-
-    updateUI();
-    await loadTeamList();
-
-  } catch (e) {
-    console.error("Refresh failed", e);
-  }
 }
 
 /* INIT */
@@ -705,10 +706,12 @@ async function init(){
     Object.assign(state,data);
 
   } catch(e){
+
     console.error("Init failed", e);
   }
 
   updateUI();
+
   await loadTeamList();
 }
 
