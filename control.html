@@ -295,37 +295,55 @@ input:disabled {
 
   <div class="team-row">
 
+    <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
+
       <img id="teamALogo" class="team-logo" src="">
+
       <div id="teamAScore" class="team-score">0</div>
+
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
+    <!-- DASH -->
     <div style="font-size:32px; padding-top:90px;">-</div>
 
+    <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
+
       <img id="teamBLogo" class="team-logo" src="">
+
       <div id="teamBScore" class="team-score">0</div>
+
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
   </div>
 </div>
 
 <div class="clock-section">
+
   <button onclick="setPeriod()">Period</button>
+
   <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
+
   <button onclick="setClock()">Clock</button>
+
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
 
 <div class="team-controls">
+
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
@@ -339,14 +357,18 @@ input:disabled {
     <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
   </div>
+
 </div>
 
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
+
   <div class="modal-content">
+
     <h2>Team Setup</h2>
 
     <div class="modal-section">
+
       <div class="team-setup">
         <h3>Team A</h3>
         <select id="teamADropdown" onchange="handleDropdownChange('A')"></select>
@@ -358,13 +380,16 @@ input:disabled {
         <select id="teamBDropdown" onchange="handleDropdownChange('B')"></select>
         <input id="teamBCustom" type="text" placeholder="Custom Team Name">
       </div>
+
     </div>
 
     <div class="modal-buttons">
       <button class="update-btn" onclick="updateTeams()">Update</button>
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
     </div>
+
   </div>
+
 </div>
 
 <script>
@@ -386,17 +411,6 @@ let state = {
 
 let timerInterval;
 
-/* 🔥 NEW: force logo refresh */
-function refreshLogos(){
-  const a = document.getElementById("teamALogo");
-  const b = document.getElementById("teamBLogo");
-
-  const t = Date.now();
-
-  if(state.teamALogo) a.src = state.teamALogo + "?t=" + t;
-  if(state.teamBLogo) b.src = state.teamBLogo + "?t=" + t;
-}
-
 /* SETTINGS */
 function openSettings(){
   document.getElementById("settingsModal").style.display = "flex";
@@ -406,7 +420,95 @@ function closeSettings(){
   document.getElementById("settingsModal").style.display = "none";
 }
 
-/* UPDATE TEAMS (MODIFIED ONLY HERE) */
+/* TEAM LIST */
+async function loadTeamList(){
+
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
+    const list = await res.json();
+
+    const uniqueList = [...new Set(list)];
+
+    ["A","B"].forEach(team=>{
+
+      const dd = document.getElementById(`team${team}Dropdown`);
+
+      dd.innerHTML = "";
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "__custom__";
+      customOpt.textContent = "-- Custom --";
+      dd.appendChild(customOpt);
+
+      uniqueList.forEach(teamName=>{
+
+        if(teamName !== "-- Custom --"){
+
+          const opt = document.createElement("option");
+          opt.value = teamName;
+          opt.textContent = teamName;
+          dd.appendChild(opt);
+
+        }
+
+      });
+
+    });
+
+    preselectTeams();
+
+  } catch(err){
+    console.error("Failed loading team list", err);
+  }
+}
+
+function handleDropdownChange(team){
+
+  const dd = document.getElementById(`team${team}Dropdown`);
+  const input = document.getElementById(`team${team}Custom`);
+
+  input.disabled = dd.value !== "__custom__";
+}
+
+function preselectTeams(){
+
+  ["A","B"].forEach(team=>{
+
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const current = state[team==="A" ? "teamAName" : "teamBName"];
+
+    let found = false;
+
+    for(let i=0;i<dd.options.length;i++){
+
+      if(dd.options[i].value === current){
+
+        dd.selectedIndex = i;
+        found = true;
+        break;
+
+      }
+
+    }
+
+    if(!found){
+
+      dd.value = "__custom__";
+      input.value = current;
+      input.disabled = false;
+
+    } else {
+
+      input.disabled = dd.value !== "__custom__";
+
+    }
+
+  });
+}
+
 function updateTeams(){
 
   ["A","B"].forEach(team=>{
@@ -425,22 +527,34 @@ function updateTeams(){
     state[field] = name;
 
     pushUpdate(field, name);
+
   });
 
   updateUI();
+
   closeSettings();
-
-  /* 🔥 allow Google Sheets sync then force logo refresh */
-  setTimeout(refreshLogos, 150);
 }
 
-/* REST OF YOUR ORIGINAL SCRIPT UNCHANGED BELOW */
+/* ANIMATIONS */
+function animateValue(id, change){
 
-async function pushUpdate(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
+  const el = document.getElementById(id);
+
+  el.classList.remove("score-pop","flash-green","flash-red");
+
+  void el.offsetWidth;
+
+  el.classList.add("score-pop");
+  el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
 }
 
+/* UI */
 function updateUI(){
+
   document.getElementById('teamAName').textContent = state.teamAName;
   document.getElementById('teamBName').textContent = state.teamBName;
 
@@ -450,26 +564,155 @@ function updateUI(){
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
 
-  document.getElementById('timer').textContent =
-    `${String(Math.floor(state.TimerSeconds/60)).padStart(2,'0')}:${String(state.TimerSeconds%60).padStart(2,'0')}`;
-
-  document.getElementById('period').textContent = `Period ${state.Period}`;
-
+  /* LOGOS */
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
+
+  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+  document.getElementById('period').textContent = `Period ${state.Period}`;
+
+  const btn = document.getElementById('startStopBtn');
+
+  btn.textContent = state.Running ? "Stop" : "Start";
+  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+
+  btn.classList.toggle("pulse", state.Running);
 }
 
+function formatTime(sec){
+
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+/* TIMER */
 function toggleClock(){
+
   state.Running = !state.Running;
-  pushUpdate("Running",state.Running);
+
+  if(state.Running){
+    startTimer();
+  } else {
+    stopTimer();
+  }
+
   updateUI();
+
+  pushUpdate("Running",state.Running);
 }
 
-async function init(){
-  const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-  const data = await res.json();
-  Object.assign(state,data);
+function startTimer(){
+
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(()=>{
+
+    if(state.TimerSeconds > 0){
+
+      state.TimerSeconds--;
+
+      document.getElementById('timer').textContent =
+        formatTime(state.TimerSeconds);
+
+      pushUpdate("TimerSeconds",state.TimerSeconds);
+
+    }
+
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+/* CONTROLS */
+function setClock(){
+
+  const input = prompt("Enter time (MM:SS):");
+
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+
+    const [m,s] = input.split(':').map(Number);
+
+    state.TimerSeconds = m*60+s;
+
+    updateUI();
+
+    pushUpdate("TimerSeconds",state.TimerSeconds);
+  }
+}
+
+function setPeriod(){
+
+  const val = parseInt(prompt("Enter period number:"));
+
+  if(!isNaN(val) && val > 0){
+
+    state.Period = val;
+
+    updateUI();
+
+    pushUpdate("Period",val);
+  }
+}
+
+function updateScore(team,change){
+
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
   updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+function updateShots(team,change){
+
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+/* GOOGLE SYNC */
+async function pushUpdate(field,value){
+
+  await fetch(
+    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
+  );
+}
+
+/* INIT */
+async function init(){
+
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+
+    const data = await res.json();
+
+    Object.assign(state,data);
+
+  } catch(e){
+
+    console.error("Init failed", e);
+  }
+
+  updateUI();
+
+  await loadTeamList();
 }
 
 init();
