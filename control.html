@@ -54,16 +54,15 @@ body {
   justify-content: center;
   gap: 6px;
   text-align: center;
-  position: relative;
+  position: relative; /* needed for badge */
 }
 
-/* TEAM NAME */
 .team-name {
   font-weight: bold;
   font-size: 18px;
 }
 
-/* LOGO */
+/* TEAM LOGOS */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -71,20 +70,21 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
+  cursor: pointer;
 }
 
-/* PP ACTIVE */
+/* PP ACTIVE OUTLINE */
 .team-logo.pp-active {
   border: 3px solid yellow;
   box-shadow: 0 0 8px yellow;
 }
 
-/* PP BADGE — FIXED POSITION (tight corner) */
+/* PP BADGE (tight top-right of circle) */
 .pp-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  transform: translate(35%, -35%);
+  top: 18px;
+  right: 18px;
+  transform: translate(50%, -50%);
   background: yellow;
   color: black;
   font-size: 11px;
@@ -92,13 +92,13 @@ body {
   padding: 2px 4px;
   border-radius: 4px;
   display: none;
+  pointer-events: none;
 }
 
 .team-block.pp-on .pp-badge {
   display: block;
 }
 
-/* SCORE */
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -167,6 +167,17 @@ button:active {
   margin-bottom: 16px;
 }
 
+/* PULSE */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 /* CONTROLS */
 .team-controls {
   display: flex;
@@ -199,6 +210,104 @@ button:active {
   background-color: #777;
   color: #fff;
 }
+
+/* ANIMATIONS */
+.score-pop {
+  animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.flash-green {
+  animation: flashGreen 1s ease;
+  font-weight: bold;
+}
+
+.flash-red {
+  animation: flashRed 1s ease;
+  font-weight: bold;
+}
+
+@keyframes flashGreen {
+  0% { color: #fff; }
+  40% { color: #28a745; }
+  100% { color: #fff; }
+}
+
+@keyframes flashRed {
+  0% { color: #fff; }
+  40% { color: #dc3545; }
+  100% { color: #fff; }
+}
+
+/* SETTINGS MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.team-setup {
+  flex: 1;
+}
+
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+input:disabled {
+  background-color: #444;
+  color: #aaa;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.update-btn { background-color: #28a745; color: #fff; }
+.cancel-btn { background-color: #555; color: #fff; }
+.reset-btn { background-color: #dc3545; color: #fff; }
 </style>
 </head>
 
@@ -207,10 +316,12 @@ button:active {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
+
   <div class="team-row">
 
     <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
 
       <img id="teamALogo" class="team-logo">
@@ -219,12 +330,14 @@ button:active {
 
       <div id="teamAScore" class="team-score">0</div>
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
     <div style="font-size:32px; padding-top:90px;">-</div>
 
     <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
 
       <img id="teamBLogo" class="team-logo">
@@ -233,6 +346,7 @@ button:active {
 
       <div id="teamBScore" class="team-score">0</div>
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
   </div>
@@ -240,18 +354,17 @@ button:active {
 
 <div class="clock-section">
   <button onclick="setPeriod()">Period</button>
-
   <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
-
   <button onclick="setClock()">Clock</button>
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
 
 <div class="team-controls">
+
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
@@ -265,6 +378,7 @@ button:active {
     <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
   </div>
+
 </div>
 
 <script>
@@ -286,10 +400,8 @@ let state = {
   teamB_pp:false
 };
 
-let timerInterval;
-
 /* =========================
-   PP TOGGLE (ONLY ADDITION)
+   PP TOGGLE ONLY ADDITION
 ========================= */
 function togglePP(team){
 
@@ -302,15 +414,13 @@ function togglePP(team){
   updateUI();
 }
 
-/* LOGO CLICK BIND */
+/* LOGO CLICK ONLY ADDITION */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("teamALogo").onclick = () => togglePP("A");
   document.getElementById("teamBLogo").onclick = () => togglePP("B");
 });
 
-/* =========================
-   UI (UNCHANGED LOGIC)
-========================= */
+/* UI (UNCHANGED LOGIC) */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -325,52 +435,32 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  const Alogo = document.getElementById("teamALogo");
-  const Blogo = document.getElementById("teamBLogo");
+  const A = document.getElementById("teamALogo");
+  const B = document.getElementById("teamBLogo");
 
-  const Ablock = Alogo.closest(".team-block");
-  const Bblock = Blogo.closest(".team-block");
+  const Ab = A.closest(".team-block");
+  const Bb = B.closest(".team-block");
 
   if(state.teamA_pp){
-    Alogo.classList.add("pp-active");
-    Ablock.classList.add("pp-on");
+    A.classList.add("pp-active");
+    Ab.classList.add("pp-on");
   } else {
-    Alogo.classList.remove("pp-active");
-    Ablock.classList.remove("pp-on");
+    A.classList.remove("pp-active");
+    Ab.classList.remove("pp-on");
   }
 
   if(state.teamB_pp){
-    Blogo.classList.add("pp-active");
-    Bblock.classList.add("pp-on");
+    B.classList.add("pp-active");
+    Bb.classList.add("pp-on");
   } else {
-    Blogo.classList.remove("pp-active");
-    Bblock.classList.remove("pp-on");
+    B.classList.remove("pp-active");
+    Bb.classList.remove("pp-on");
   }
 
   const btn = document.getElementById('startStopBtn');
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
 }
-
-/* GOOGLE SYNC */
-async function pushUpdate(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
-}
-
-/* INIT (KEEP YOUR ORIGINAL LOGIC HERE) */
-async function init(){
-  try {
-    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-    const data = await res.json();
-    Object.assign(state,data);
-  } catch(e){
-    console.error(e);
-  }
-
-  updateUI();
-}
-
-init();
 </script>
 
 </body>
