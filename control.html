@@ -51,7 +51,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 6px;
   text-align: center;
 }
@@ -67,7 +66,7 @@ body {
   display: inline-block;
 }
 
-/* TEAM LOGO */
+/* LOGO */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -211,39 +210,6 @@ button:active {
   color: #fff;
 }
 
-/* ANIMATIONS */
-.score-pop {
-  animation: pop 0.25s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.4); }
-  100% { transform: scale(1); }
-}
-
-.flash-green {
-  animation: flashGreen 1s ease;
-  font-weight: bold;
-}
-
-.flash-red {
-  animation: flashRed 1s ease;
-  font-weight: bold;
-}
-
-@keyframes flashGreen {
-  0% { color: #fff; }
-  40% { color: #28a745; }
-  100% { color: #fff; }
-}
-
-@keyframes flashRed {
-  0% { color: #fff; }
-  40% { color: #dc3545; }
-  100% { color: #fff; }
-}
-
 /* SETTINGS MODAL */
 .modal {
   display: none;
@@ -303,15 +269,8 @@ input:disabled {
   font-size: 16px;
 }
 
-.update-btn {
-  background-color: #28a745;
-  color: #fff;
-}
-
-.cancel-btn {
-  background-color: #555;
-  color: #fff;
-}
+.update-btn { background-color: #28a745; color: #fff; }
+.cancel-btn { background-color: #555; color: #fff; }
 </style>
 </head>
 
@@ -433,14 +392,13 @@ let state = {
   Period:1,
   TimerSeconds:1200,
   Running:false,
-
   teamA_pp:false,
   teamB_pp:false
 };
 
 let timerInterval;
 
-/* PP TOGGLE */
+/* PP */
 function togglePP(team){
 
   if(team === "A"){
@@ -456,124 +414,64 @@ function togglePP(team){
   updateUI();
 }
 
-/* SETTINGS */
-function openSettings(){
-  document.getElementById("settingsModal").style.display = "flex";
+/* SCORE + SHOTS */
+function updateScore(team, delta){
+  const key = team === "A" ? "teamAScore" : "teamBScore";
+  state[key] = Math.max(0, state[key] + delta);
+  pushUpdate(key, state[key]);
+  updateUI();
 }
 
-function closeSettings(){
-  document.getElementById("settingsModal").style.display = "none";
+function updateShots(team, delta){
+  const key = team === "A" ? "teamAShots" : "teamBShots";
+  state[key] = Math.max(0, state[key] + delta);
+  pushUpdate(key, state[key]);
+  updateUI();
 }
 
-/* TEAM LIST */
-async function loadTeamList(){
-  try {
-    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
-    const list = await res.json();
-    const uniqueList = [...new Set(list)];
-
-    ["A","B"].forEach(team=>{
-      const dd = document.getElementById(`team${team}Dropdown`);
-      dd.innerHTML = "";
-
-      const customOpt = document.createElement("option");
-      customOpt.value = "__custom__";
-      customOpt.textContent = "-- Custom --";
-      dd.appendChild(customOpt);
-
-      uniqueList.forEach(teamName=>{
-        const opt = document.createElement("option");
-        opt.value = teamName;
-        opt.textContent = teamName;
-        dd.appendChild(opt);
-      });
-    });
-
-    preselectTeams();
-
-  } catch(err){
-    console.error("Failed loading team list", err);
+/* CLOCK */
+function setClock(){
+  const input = prompt("Enter time (MM:SS):");
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s] = input.split(':').map(Number);
+    state.TimerSeconds = m*60+s;
+    pushUpdate("TimerSeconds", state.TimerSeconds);
+    updateUI();
   }
 }
 
-function handleDropdownChange(team){
-  const dd = document.getElementById(`team${team}Dropdown`);
-  const input = document.getElementById(`team${team}Custom`);
-  input.disabled = dd.value !== "__custom__";
+function setPeriod(){
+  const val = parseInt(prompt("Enter period number:"));
+  if(!isNaN(val) && val > 0){
+    state.Period = val;
+    pushUpdate("Period", val);
+    updateUI();
+  }
 }
 
-function preselectTeams(){
+/* TIMER */
+function toggleClock(){
+  state.Running = !state.Running;
 
-  ["A","B"].forEach(team=>{
-    const dd = document.getElementById(`team${team}Dropdown`);
-    const input = document.getElementById(`team${team}Custom`);
-
-    const current = state[team==="A" ? "teamAName" : "teamBName"];
-
-    let found = false;
-
-    for(let i=0;i<dd.options.length;i++){
-      if(dd.options[i].value === current){
-        dd.selectedIndex = i;
-        found = true;
-        break;
+  if(state.Running){
+    timerInterval = setInterval(()=>{
+      if(state.TimerSeconds > 0){
+        state.TimerSeconds--;
+        pushUpdate("TimerSeconds", state.TimerSeconds);
+        updateUI();
       }
-    }
+    },1000);
+  } else {
+    clearInterval(timerInterval);
+  }
 
-    if(!found){
-      dd.value = "__custom__";
-      input.value = current;
-      input.disabled = false;
-    } else {
-      input.disabled = dd.value !== "__custom__";
-    }
-  });
+  pushUpdate("Running", state.Running);
+  updateUI();
 }
 
-function updateTeams(){
-
-  ["A","B"].forEach(team=>{
-    const dd = document.getElementById(`team${team}Dropdown`);
-    const input = document.getElementById(`team${team}Custom`);
-
-    const name = dd.value === "__custom__"
-      ? input.value.trim()
-      : dd.value;
-
-    if(!name) return;
-
-    const field = team==="A" ? "teamAName" : "teamBName";
-
-    state[field] = name;
-    pushUpdate(field, name);
-  });
-
-  updateUI();
-  closeSettings();
-}
-
-/* RESET */
-function resetGame(){
-
-  state.teamAScore = 0;
-  state.teamBScore = 0;
-  state.teamAShots = 0;
-  state.teamBShots = 0;
-  state.Period = 1;
-  state.TimerSeconds = 900;
-  state.Running = false;
-
-  updateUI();
-
-  pushUpdate("teamAScore",0);
-  pushUpdate("teamBScore",0);
-  pushUpdate("teamAShots",0);
-  pushUpdate("teamBShots",0);
-  pushUpdate("Period",1);
-  pushUpdate("TimerSeconds",900);
-  pushUpdate("Running",false);
-
-  closeSettings();
+/* GOOGLE SYNC */
+async function pushUpdate(field,value){
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
 /* UI */
@@ -591,13 +489,14 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+  document.getElementById('timer').textContent =
+    `${String(Math.floor(state.TimerSeconds/60)).padStart(2,'0')}:${String(state.TimerSeconds%60).padStart(2,'0')}`;
+
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
   const btn = document.getElementById('startStopBtn');
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
-  btn.classList.toggle("pulse", state.Running);
 
   /* PP UI */
   document.getElementById('teamALogo').classList.toggle("pp-active", state.teamA_pp);
@@ -607,30 +506,16 @@ function updateUI(){
   document.getElementById('teamBPPFlag').style.display = state.teamB_pp ? "block" : "none";
 }
 
-function formatTime(sec){
-  const m = Math.floor(sec/60);
-  const s = sec%60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-/* GOOGLE SYNC */
-async function pushUpdate(field,value){
-  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
-}
-
 /* INIT */
 async function init(){
-
   try {
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
     const data = await res.json();
     Object.assign(state,data);
   } catch(e){
-    console.error("Init failed", e);
+    console.error(e);
   }
-
   updateUI();
-  await loadTeamList();
 }
 
 init();
