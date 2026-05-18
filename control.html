@@ -61,7 +61,13 @@ body {
   font-size: 18px;
 }
 
-/* TEAM LOGOS */
+/* LOGO WRAPPER */
+.logo-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* TEAM LOGO */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -69,8 +75,30 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
+  cursor: pointer;
 }
 
+/* PP ACTIVE RING */
+.pp-active {
+  border: 3px solid #ffd400 !important;
+  box-shadow: 0 0 10px rgba(255, 212, 0, 0.7);
+}
+
+/* PP FLAG */
+.pp-flag {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ffd400;
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+/* SCORE */
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -300,15 +328,16 @@ input:disabled {
 
       <div id="teamAName" class="team-name">Team A</div>
 
-      <img id="teamALogo" class="team-logo" src="">
+      <div class="logo-wrap">
+        <img id="teamALogo" class="team-logo" src="" onclick="togglePP('A')">
+        <span id="teamAPPFlag" class="pp-flag" style="display:none;">PP</span>
+      </div>
 
       <div id="teamAScore" class="team-score">0</div>
-
       <div id="teamAShots" class="team-shots">Shots: 0</div>
 
     </div>
 
-    <!-- DASH -->
     <div style="font-size:32px; padding-top:90px;">-</div>
 
     <!-- TEAM B -->
@@ -316,10 +345,12 @@ input:disabled {
 
       <div id="teamBName" class="team-name">Team B</div>
 
-      <img id="teamBLogo" class="team-logo" src="">
+      <div class="logo-wrap">
+        <img id="teamBLogo" class="team-logo" src="" onclick="togglePP('B')">
+        <span id="teamBPPFlag" class="pp-flag" style="display:none;">PP</span>
+      </div>
 
       <div id="teamBScore" class="team-score">0</div>
-
       <div id="teamBShots" class="team-shots">Shots: 0</div>
 
     </div>
@@ -328,7 +359,6 @@ input:disabled {
 </div>
 
 <div class="clock-section">
-
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -337,7 +367,6 @@ input:disabled {
   </div>
 
   <button onclick="setClock()">Clock</button>
-
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -362,9 +391,7 @@ input:disabled {
 
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
-
   <div class="modal-content">
-
     <h2>Team Setup</h2>
 
     <div class="modal-section">
@@ -388,9 +415,7 @@ input:disabled {
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
       <button class="cancel-btn" onclick="resetGame()">Reset Game</button>
     </div>
-
   </div>
-
 </div>
 
 <script>
@@ -407,10 +432,29 @@ let state = {
   teamBLogo:"",
   Period:1,
   TimerSeconds:1200,
-  Running:false
+  Running:false,
+
+  teamA_pp:false,
+  teamB_pp:false
 };
 
 let timerInterval;
+
+/* PP TOGGLE */
+function togglePP(team){
+
+  if(team === "A"){
+    state.teamA_pp = !state.teamA_pp;
+    pushUpdate("teamA_pp", state.teamA_pp);
+  }
+
+  if(team === "B"){
+    state.teamB_pp = !state.teamB_pp;
+    pushUpdate("teamB_pp", state.teamB_pp);
+  }
+
+  updateUI();
+}
 
 /* SETTINGS */
 function openSettings(){
@@ -423,18 +467,13 @@ function closeSettings(){
 
 /* TEAM LIST */
 async function loadTeamList(){
-
   try {
-
     const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
     const list = await res.json();
-
     const uniqueList = [...new Set(list)];
 
     ["A","B"].forEach(team=>{
-
       const dd = document.getElementById(`team${team}Dropdown`);
-
       dd.innerHTML = "";
 
       const customOpt = document.createElement("option");
@@ -443,18 +482,11 @@ async function loadTeamList(){
       dd.appendChild(customOpt);
 
       uniqueList.forEach(teamName=>{
-
-        if(teamName !== "-- Custom --"){
-
-          const opt = document.createElement("option");
-          opt.value = teamName;
-          opt.textContent = teamName;
-          dd.appendChild(opt);
-
-        }
-
+        const opt = document.createElement("option");
+        opt.value = teamName;
+        opt.textContent = teamName;
+        dd.appendChild(opt);
       });
-
     });
 
     preselectTeams();
@@ -465,17 +497,14 @@ async function loadTeamList(){
 }
 
 function handleDropdownChange(team){
-
   const dd = document.getElementById(`team${team}Dropdown`);
   const input = document.getElementById(`team${team}Custom`);
-
   input.disabled = dd.value !== "__custom__";
 }
 
 function preselectTeams(){
 
   ["A","B"].forEach(team=>{
-
     const dd = document.getElementById(`team${team}Dropdown`);
     const input = document.getElementById(`team${team}Custom`);
 
@@ -484,36 +513,26 @@ function preselectTeams(){
     let found = false;
 
     for(let i=0;i<dd.options.length;i++){
-
       if(dd.options[i].value === current){
-
         dd.selectedIndex = i;
         found = true;
         break;
-
       }
-
     }
 
     if(!found){
-
       dd.value = "__custom__";
       input.value = current;
       input.disabled = false;
-
     } else {
-
       input.disabled = dd.value !== "__custom__";
-
     }
-
   });
 }
 
 function updateTeams(){
 
   ["A","B"].forEach(team=>{
-
     const dd = document.getElementById(`team${team}Dropdown`);
     const input = document.getElementById(`team${team}Custom`);
 
@@ -526,16 +545,14 @@ function updateTeams(){
     const field = team==="A" ? "teamAName" : "teamBName";
 
     state[field] = name;
-
     pushUpdate(field, name);
-
   });
 
   updateUI();
   closeSettings();
 }
 
-/* 🆕 RESET FUNCTION */
+/* RESET */
 function resetGame(){
 
   state.teamAScore = 0;
@@ -559,23 +576,6 @@ function resetGame(){
   closeSettings();
 }
 
-/* ANIMATIONS */
-function animateValue(id, change){
-
-  const el = document.getElementById(id);
-
-  el.classList.remove("score-pop","flash-green","flash-red");
-
-  void el.offsetWidth;
-
-  el.classList.add("score-pop");
-  el.classList.add(change > 0 ? "flash-green" : "flash-red");
-
-  setTimeout(()=>{
-    el.classList.remove("flash-green","flash-red");
-  },1000);
-}
-
 /* UI */
 function updateUI(){
 
@@ -595,10 +595,16 @@ function updateUI(){
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
   const btn = document.getElementById('startStopBtn');
-
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
   btn.classList.toggle("pulse", state.Running);
+
+  /* PP UI */
+  document.getElementById('teamALogo').classList.toggle("pp-active", state.teamA_pp);
+  document.getElementById('teamBLogo').classList.toggle("pp-active", state.teamB_pp);
+
+  document.getElementById('teamAPPFlag').style.display = state.teamA_pp ? "block" : "none";
+  document.getElementById('teamBPPFlag').style.display = state.teamB_pp ? "block" : "none";
 }
 
 function formatTime(sec){
@@ -607,101 +613,23 @@ function formatTime(sec){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-/* TIMER */
-function toggleClock(){
-
-  state.Running = !state.Running;
-
-  if(state.Running){
-    startTimer();
-  } else {
-    stopTimer();
-  }
-
-  updateUI();
-  pushUpdate("Running",state.Running);
-}
-
-function startTimer(){
-
-  clearInterval(timerInterval);
-
-  timerInterval = setInterval(()=>{
-
-    if(state.TimerSeconds > 0){
-
-      state.TimerSeconds--;
-
-      document.getElementById('timer').textContent =
-        formatTime(state.TimerSeconds);
-
-      pushUpdate("TimerSeconds",state.TimerSeconds);
-
-    }
-
-  },1000);
-}
-
-function stopTimer(){
-  clearInterval(timerInterval);
-}
-
-/* CONTROLS */
-function setClock(){
-
-  const input = prompt("Enter time (MM:SS):");
-
-  if(input && /^\d{1,2}:\d{2}$/.test(input)){
-
-    const [m,s] = input.split(':').map(Number);
-
-    state.TimerSeconds = m*60+s;
-
-    updateUI();
-
-    pushUpdate("TimerSeconds",state.TimerSeconds);
-  }
-}
-
-function setPeriod(){
-
-  const val = parseInt(prompt("Enter period number:"));
-
-  if(!isNaN(val) && val > 0){
-
-    state.Period = val;
-
-    updateUI();
-
-    pushUpdate("Period",val);
-  }
-}
-
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
-
-  await fetch(
-    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
-  );
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
 /* INIT */
 async function init(){
 
   try {
-
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-
     const data = await res.json();
-
     Object.assign(state,data);
-
   } catch(e){
     console.error("Init failed", e);
   }
 
   updateUI();
-
   await loadTeamList();
 }
 
