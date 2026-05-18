@@ -527,12 +527,15 @@ function updateTeams(){
     state[field] = name;
 
     pushUpdate(field, name);
-
   });
 
   updateUI();
-
   closeSettings();
+
+  // 🔥 FORCE REFRESH FROM GOOGLE SHEET (fixes logo + sync delay)
+  setTimeout(() => {
+    init();   // re-fetch full state including logos
+  }, 150);
 }
 
 /* ANIMATIONS */
