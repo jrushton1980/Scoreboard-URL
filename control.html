@@ -71,6 +71,36 @@ body {
   background: #222;
 }
 
+/* LOGO WRAPPER */
+.logo-wrapper {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+/* POWER PLAY FLAG */
+.pp-flag {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffc107;
+  color: #000;
+  font-size: 11px;
+  font-weight: bold;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #111;
+  z-index: 5;
+}
+
+.pp-flag.active {
+  display: flex;
+}
+
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -307,7 +337,10 @@ input:disabled {
 
       <div id="teamAName" class="team-name">Team A</div>
 
-      <img id="teamALogo" class="team-logo" src="">
+      <div class="logo-wrapper">
+        <img id="teamALogo" class="team-logo" src="">
+        <div id="teamAPP" class="pp-flag">PP</div>
+      </div>
 
       <div id="teamAScore" class="team-score">0</div>
 
@@ -323,7 +356,10 @@ input:disabled {
 
       <div id="teamBName" class="team-name">Team B</div>
 
-      <img id="teamBLogo" class="team-logo" src="">
+      <div class="logo-wrapper">
+        <img id="teamBLogo" class="team-logo" src="">
+        <div id="teamBPP" class="pp-flag">PP</div>
+      </div>
 
       <div id="teamBScore" class="team-score">0</div>
 
@@ -393,6 +429,8 @@ input:disabled {
     <div class="modal-buttons">
       <button class="update-btn" onclick="updateTeams()">Update</button>
       <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+      <button class="update-btn" onclick="togglePP('A')">Toggle Team A PP</button>
+      <button class="update-btn" onclick="togglePP('B')">Toggle Team B PP</button>
       <button class="reset-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
@@ -408,348 +446,17 @@ let state = {
   teamAScore:0,
   teamAShots:0,
   teamALogo:"",
+  teamAPP:false,
+
   teamBName:"Team B",
   teamBScore:0,
   teamBShots:0,
   teamBLogo:"",
+  teamBPP:false,
+
   Period:1,
   TimerSeconds:1200,
   Running:false
 };
 
 let timerInterval;
-
-/* SETTINGS */
-function openSettings(){
-  document.getElementById("settingsModal").style.display = "flex";
-}
-
-function closeSettings(){
-  document.getElementById("settingsModal").style.display = "none";
-}
-
-/* TEAM LIST */
-async function loadTeamList(){
-
-  try {
-
-    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
-    const list = await res.json();
-
-    const uniqueList = [...new Set(list)];
-
-    ["A","B"].forEach(team=>{
-
-      const dd = document.getElementById(`team${team}Dropdown`);
-
-      dd.innerHTML = "";
-
-      const customOpt = document.createElement("option");
-      customOpt.value = "__custom__";
-      customOpt.textContent = "-- Custom --";
-      dd.appendChild(customOpt);
-
-      uniqueList.forEach(teamName=>{
-
-        if(teamName !== "-- Custom --"){
-
-          const opt = document.createElement("option");
-          opt.value = teamName;
-          opt.textContent = teamName;
-          dd.appendChild(opt);
-
-        }
-
-      });
-
-    });
-
-    preselectTeams();
-
-  } catch(err){
-    console.error("Failed loading team list", err);
-  }
-}
-
-function handleDropdownChange(team){
-
-  const dd = document.getElementById(`team${team}Dropdown`);
-  const input = document.getElementById(`team${team}Custom`);
-
-  input.disabled = dd.value !== "__custom__";
-}
-
-function preselectTeams(){
-
-  ["A","B"].forEach(team=>{
-
-    const dd = document.getElementById(`team${team}Dropdown`);
-    const input = document.getElementById(`team${team}Custom`);
-
-    const current = state[team==="A" ? "teamAName" : "teamBName"];
-
-    let found = false;
-
-    for(let i=0;i<dd.options.length;i++){
-
-      if(dd.options[i].value === current){
-
-        dd.selectedIndex = i;
-        found = true;
-        break;
-
-      }
-
-    }
-
-    if(!found){
-
-      dd.value = "__custom__";
-      input.value = current;
-      input.disabled = false;
-
-    } else {
-
-      input.disabled = dd.value !== "__custom__";
-
-    }
-
-  });
-}
-
-function updateTeams(){
-
-  ["A","B"].forEach(team=>{
-
-    const dd = document.getElementById(`team${team}Dropdown`);
-    const input = document.getElementById(`team${team}Custom`);
-
-    const name = dd.value === "__custom__"
-      ? input.value.trim()
-      : dd.value;
-
-    if(!name) return;
-
-    const field = team==="A" ? "teamAName" : "teamBName";
-
-    state[field] = name;
-
-    pushUpdate(field, name);
-
-  });
-
-  updateUI();
-
-  closeSettings();
-}
-
-/* RESET GAME */
-function resetGame(){
-
-  stopTimer();
-
-  state.teamAScore = 0;
-  state.teamBScore = 0;
-  state.teamAShots = 0;
-  state.teamBShots = 0;
-  state.Period = 1;
-  state.TimerSeconds = 900;
-  state.Running = false;
-
-  updateUI();
-
-  pushUpdate("teamAScore",0);
-  pushUpdate("teamBScore",0);
-  pushUpdate("teamAShots",0);
-  pushUpdate("teamBShots",0);
-  pushUpdate("Period",1);
-  pushUpdate("TimerSeconds",900);
-  pushUpdate("Running",false);
-
-  closeSettings();
-}
-
-/* ANIMATIONS */
-function animateValue(id, change){
-
-  const el = document.getElementById(id);
-
-  el.classList.remove("score-pop","flash-green","flash-red");
-
-  void el.offsetWidth;
-
-  el.classList.add("score-pop");
-  el.classList.add(change > 0 ? "flash-green" : "flash-red");
-
-  setTimeout(()=>{
-    el.classList.remove("flash-green","flash-red");
-  },1000);
-}
-
-/* UI */
-function updateUI(){
-
-  document.getElementById('teamAName').textContent = state.teamAName;
-  document.getElementById('teamBName').textContent = state.teamBName;
-
-  document.getElementById('teamAScore').textContent = state.teamAScore;
-  document.getElementById('teamBScore').textContent = state.teamBScore;
-
-  document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
-  document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
-
-  document.getElementById('teamALogo').src = state.teamALogo || "";
-  document.getElementById('teamBLogo').src = state.teamBLogo || "";
-
-  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
-  document.getElementById('period').textContent = `Period ${state.Period}`;
-
-  const btn = document.getElementById('startStopBtn');
-
-  btn.textContent = state.Running ? "Stop" : "Start";
-  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
-
-  btn.classList.toggle("pulse", state.Running);
-}
-
-function formatTime(sec){
-
-  const m = Math.floor(sec/60);
-  const s = sec%60;
-
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-/* TIMER */
-function toggleClock(){
-
-  state.Running = !state.Running;
-
-  if(state.Running){
-    startTimer();
-  } else {
-    stopTimer();
-  }
-
-  updateUI();
-
-  pushUpdate("Running",state.Running);
-}
-
-function startTimer(){
-
-  clearInterval(timerInterval);
-
-  timerInterval = setInterval(()=>{
-
-    if(state.TimerSeconds > 0){
-
-      state.TimerSeconds--;
-
-      document.getElementById('timer').textContent =
-        formatTime(state.TimerSeconds);
-
-      pushUpdate("TimerSeconds",state.TimerSeconds);
-
-    }
-
-  },1000);
-}
-
-function stopTimer(){
-  clearInterval(timerInterval);
-}
-
-/* CONTROLS */
-function setClock(){
-
-  const input = prompt("Enter time (MM:SS):");
-
-  if(input && /^\d{1,2}:\d{2}$/.test(input)){
-
-    const [m,s] = input.split(':').map(Number);
-
-    state.TimerSeconds = m*60+s;
-
-    updateUI();
-
-    pushUpdate("TimerSeconds",state.TimerSeconds);
-  }
-}
-
-function setPeriod(){
-
-  const val = parseInt(prompt("Enter period number:"));
-
-  if(!isNaN(val) && val > 0){
-
-    state.Period = val;
-
-    updateUI();
-
-    pushUpdate("Period",val);
-  }
-}
-
-function updateScore(team,change){
-
-  const key = team==="A" ? "teamAScore" : "teamBScore";
-  const el = team==="A" ? "teamAScore" : "teamBScore";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-function updateShots(team,change){
-
-  const key = team==="A" ? "teamAShots" : "teamBShots";
-  const el = team==="A" ? "teamAShots" : "teamBShots";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-/* GOOGLE SYNC */
-async function pushUpdate(field,value){
-
-  await fetch(
-    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
-  );
-}
-
-/* INIT */
-async function init(){
-
-  try {
-
-    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-
-    const data = await res.json();
-
-    Object.assign(state,data);
-
-  } catch(e){
-
-    console.error("Init failed", e);
-  }
-
-  updateUI();
-
-  await loadTeamList();
-}
-
-init();
-</script>
-
-</body>
-</html>
