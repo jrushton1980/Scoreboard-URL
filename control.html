@@ -36,14 +36,14 @@ body {
   width: 95%;
   background: #1e1e1e;
   border-radius: 12px;
-  padding: 10px;
+  padding: 12px 10px;
   margin-bottom: 12px;
 }
 
 .team-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .team-block {
@@ -51,7 +51,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
 }
 
 .team-name {
@@ -59,8 +61,18 @@ body {
   font-size: 18px;
 }
 
+/* TEAM LOGOS */
+.team-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #222;
+}
+
 .team-score {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: bold;
 }
 
@@ -280,26 +292,43 @@ input:disabled {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
+
   <div class="team-row">
 
+    <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
+
+      <img id="teamALogo" class="team-logo" src="">
+
       <div id="teamAScore" class="team-score">0</div>
+
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
-    <div>-</div>
+    <!-- DASH -->
+    <div style="font-size:32px; padding-top:90px;">-</div>
 
+    <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
+
+      <img id="teamBLogo" class="team-logo" src="">
+
       <div id="teamBScore" class="team-score">0</div>
+
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
   </div>
 </div>
 
 <div class="clock-section">
+
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -308,11 +337,13 @@ input:disabled {
   </div>
 
   <button onclick="setClock()">Clock</button>
+
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
 
 <div class="team-controls">
+
   <div class="team-column">
     <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
     <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
@@ -326,10 +357,12 @@ input:disabled {
     <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
     <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
   </div>
+
 </div>
 
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal">
+
   <div class="modal-content">
 
     <h2>Team Setup</h2>
@@ -356,6 +389,7 @@ input:disabled {
     </div>
 
   </div>
+
 </div>
 
 <script>
@@ -365,9 +399,11 @@ let state = {
   teamAName:"Team A",
   teamAScore:0,
   teamAShots:0,
+  teamALogo:"",
   teamBName:"Team B",
   teamBScore:0,
   teamBShots:0,
+  teamBLogo:"",
   Period:1,
   TimerSeconds:1200,
   Running:false
@@ -406,12 +442,16 @@ async function loadTeamList(){
       dd.appendChild(customOpt);
 
       uniqueList.forEach(teamName=>{
+
         if(teamName !== "-- Custom --"){
+
           const opt = document.createElement("option");
           opt.value = teamName;
           opt.textContent = teamName;
           dd.appendChild(opt);
+
         }
+
       });
 
     });
@@ -449,15 +489,21 @@ function preselectTeams(){
         dd.selectedIndex = i;
         found = true;
         break;
+
       }
+
     }
 
     if(!found){
+
       dd.value = "__custom__";
       input.value = current;
       input.disabled = false;
+
     } else {
+
       input.disabled = dd.value !== "__custom__";
+
     }
 
   });
@@ -485,6 +531,7 @@ function updateTeams(){
   });
 
   updateUI();
+
   closeSettings();
 }
 
@@ -516,6 +563,10 @@ function updateUI(){
 
   document.getElementById('teamAShots').textContent = `Shots: ${state.teamAShots}`;
   document.getElementById('teamBShots').textContent = `Shots: ${state.teamBShots}`;
+
+  /* LOGOS */
+  document.getElementById('teamALogo').src = state.teamALogo || "";
+  document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
   document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
   document.getElementById('period').textContent = `Period ${state.Period}`;
