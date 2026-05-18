@@ -61,13 +61,13 @@ body {
   font-size: 18px;
 }
 
-/* LOGO WRAP (ONLY ADDITION) */
+/* LOGO WRAP (ADDED ONLY) */
 .logo-wrap {
   position: relative;
   display: inline-block;
 }
 
-/* ORIGINAL LOGO STYLE (UNCHANGED) */
+/* TEAM LOGOS (UNCHANGED) */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -77,13 +77,13 @@ body {
   background: #222;
 }
 
-/* PP ONLY */
-.pp-active {
+/* PP VISUALS (ADDED ONLY) */
+.pp-ring {
   border: 3px solid #ffd400 !important;
   box-shadow: 0 0 10px rgba(255, 212, 0, 0.7);
 }
 
-.pp-flag {
+.pp-badge {
   position: absolute;
   top: -6px;
   right: -6px;
@@ -107,7 +107,7 @@ body {
   opacity: 0.9;
 }
 
-/* BUTTON FEEDBACK (UNCHANGED EXACTLY) */
+/* BUTTON FEEDBACK (UNCHANGED) */
 button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -153,7 +153,7 @@ button:active {
   text-align: center;
 }
 
-/* START BUTTON (UNCHANGED) */
+/* START BUTTON */
 #startStopBtn {
   width: 95%;
   font-size: 28px;
@@ -176,7 +176,7 @@ button:active {
   100% { transform: scale(1); }
 }
 
-/* CONTROLS (UNCHANGED) */
+/* CONTROLS */
 .team-controls {
   display: flex;
   justify-content: space-between;
@@ -209,7 +209,7 @@ button:active {
   color: #fff;
 }
 
-/* ANIMATIONS (UNCHANGED EXACTLY) */
+/* ANIMATIONS (UNCHANGED) */
 .score-pop {
   animation: pop 0.25s ease;
 }
@@ -242,7 +242,7 @@ button:active {
   100% { color: #fff; }
 }
 
-/* MODAL (UNCHANGED) */
+/* MODAL */
 .modal {
   display: none;
   position: fixed;
@@ -289,8 +289,15 @@ select, input {
   justify-content: space-around;
 }
 
-.update-btn { background:#28a745; color:#fff; }
-.cancel-btn { background:#555; color:#fff; }
+.update-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: #fff;
+}
 </style>
 </head>
 
@@ -299,6 +306,7 @@ select, input {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
+
   <div class="team-row">
 
     <!-- TEAM A -->
@@ -308,7 +316,7 @@ select, input {
 
       <div class="logo-wrap">
         <img id="teamALogo" class="team-logo" src="" onclick="togglePP('A')">
-        <span id="teamAPPFlag" class="pp-flag" style="display:none;">PP</span>
+        <span id="teamAPP" class="pp-badge" style="display:none;">PP</span>
       </div>
 
       <div id="teamAScore" class="team-score">0</div>
@@ -325,7 +333,7 @@ select, input {
 
       <div class="logo-wrap">
         <img id="teamBLogo" class="team-logo" src="" onclick="togglePP('B')">
-        <span id="teamBPPFlag" class="pp-flag" style="display:none;">PP</span>
+        <span id="teamBPP" class="pp-badge" style="display:none;">PP</span>
       </div>
 
       <div id="teamBScore" class="team-score">0</div>
@@ -373,7 +381,6 @@ select, input {
     <h2>Team Setup</h2>
 
     <div class="modal-section">
-
       <div class="team-setup">
         <h3>Team A</h3>
         <select id="teamADropdown"></select>
@@ -385,7 +392,6 @@ select, input {
         <select id="teamBDropdown"></select>
         <input id="teamBCustom" type="text">
       </div>
-
     </div>
 
     <div class="modal-buttons">
@@ -399,7 +405,7 @@ select, input {
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
 
-/* STATE (UNCHANGED + PP ADDED ONLY) */
+/* STATE (ONLY ADDITION IS PP) */
 let state = {
   teamAName:"Team A",
   teamAScore:0,
@@ -417,9 +423,7 @@ let state = {
   teamB_pp:false
 };
 
-let timerInterval;
-
-/* ONLY ADDITION: PP TOGGLE */
+/* ONLY NEW FEATURE */
 function togglePP(team){
 
   if(team === "A"){
@@ -435,8 +439,7 @@ function togglePP(team){
   updateUI();
 }
 
-/* EVERYTHING BELOW IS YOUR ORIGINAL LOGIC (UNCHANGED BEHAVIOR) */
-
+/* ORIGINAL FUNCTIONS (UNCHANGED) */
 function updateScore(team, delta){
   const key = team === "A" ? "teamAScore" : "teamBScore";
   state[key] = Math.max(0, state[key] + delta);
@@ -494,7 +497,7 @@ async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
-/* UI (UNCHANGED + PP ONLY ADDED) */
+/* UI (ONLY PP ADDED AT END) */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -517,12 +520,12 @@ function updateUI(){
   const btn = document.getElementById('startStopBtn');
   btn.textContent = state.Running ? "Stop" : "Start";
 
-  /* PP ONLY */
-  document.getElementById('teamALogo').classList.toggle("pp-active", state.teamA_pp);
-  document.getElementById('teamBLogo').classList.toggle("pp-active", state.teamB_pp);
+  /* PP VISUALS */
+  document.getElementById("teamALogo").classList.toggle("pp-ring", state.teamA_pp);
+  document.getElementById("teamBLogo").classList.toggle("pp-ring", state.teamB_pp);
 
-  document.getElementById('teamAPPFlag').style.display = state.teamA_pp ? "block" : "none";
-  document.getElementById('teamBPPFlag').style.display = state.teamB_pp ? "block" : "none";
+  document.getElementById("teamAPP").style.display = state.teamA_pp ? "block" : "none";
+  document.getElementById("teamBPP").style.display = state.teamB_pp ? "block" : "none";
 }
 
 /* INIT */
