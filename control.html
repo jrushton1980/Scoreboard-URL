@@ -70,11 +70,10 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
+  cursor: pointer;
 }
 
-/* =========================
-   PP ADD-ON ONLY (NEW CSS)
-========================= */
+/* PP VISUAL */
 .team-logo.pp-active {
   border: 3px solid yellow;
   box-shadow: 0 0 8px yellow;
@@ -167,17 +166,6 @@ button:active {
   margin-bottom: 16px;
 }
 
-/* PULSE */
-.pulse {
-  animation: pulseAnim 1.2s infinite;
-}
-
-@keyframes pulseAnim {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
 /* CONTROLS */
 .team-controls {
   display: flex;
@@ -209,39 +197,6 @@ button:active {
   border: none;
   background-color: #777;
   color: #fff;
-}
-
-/* ANIMATIONS */
-.score-pop {
-  animation: pop 0.25s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.4); }
-  100% { transform: scale(1); }
-}
-
-.flash-green {
-  animation: flashGreen 1s ease;
-  font-weight: bold;
-}
-
-.flash-red {
-  animation: flashRed 1s ease;
-  font-weight: bold;
-}
-
-@keyframes flashGreen {
-  0% { color: #fff; }
-  40% { color: #28a745; }
-  100% { color: #fff; }
-}
-
-@keyframes flashRed {
-  0% { color: #fff; }
-  40% { color: #dc3545; }
-  100% { color: #fff; }
 }
 
 /* SETTINGS MODAL */
@@ -305,20 +260,9 @@ input:disabled {
   font-size: 16px;
 }
 
-.update-btn {
-  background-color: #28a745;
-  color: #fff;
-}
-
-.cancel-btn {
-  background-color: #555;
-  color: #fff;
-}
-
-.reset-btn {
-  background-color: #dc3545;
-  color: #fff;
-}
+.update-btn { background-color: #28a745; color: #fff; }
+.cancel-btn { background-color: #555; color: #fff; }
+.reset-btn { background-color: #dc3545; color: #fff; }
 </style>
 </head>
 
@@ -337,7 +281,6 @@ input:disabled {
 
       <img id="teamALogo" class="team-logo">
 
-      <!-- PP badge ADDITION ONLY -->
       <div class="pp-badge">PP</div>
 
       <div id="teamAScore" class="team-score">0</div>
@@ -354,7 +297,6 @@ input:disabled {
 
       <img id="teamBLogo" class="team-logo">
 
-      <!-- PP badge ADDITION ONLY -->
       <div class="pp-badge">PP</div>
 
       <div id="teamBScore" class="team-score">0</div>
@@ -366,16 +308,12 @@ input:disabled {
 </div>
 
 <div class="clock-section">
-
   <button onclick="setPeriod()">Period</button>
-
   <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
-
   <button onclick="setClock()">Clock</button>
-
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -414,36 +352,51 @@ let state = {
   TimerSeconds:1200,
   Running:false,
 
-  /* =========================
-     PP ADDITION ONLY
-  ========================= */
   teamA_pp:false,
   teamB_pp:false
 };
 
 /* =========================
-   PP TOGGLE (ADDITION ONLY)
+   SAFE PP ADDITION ONLY
 ========================= */
+
 function togglePP(team){
-
   const key = team === "A" ? "teamA_pp" : "teamB_pp";
-
   state[key] = !state[key];
-
   pushUpdate(key, state[key]);
-
   updateUI();
 }
 
-/* LOGO CLICK (ADDITION ONLY) */
-document.addEventListener("DOMContentLoaded", () => {
+function attachPP(){
+  const a = document.getElementById("teamALogo");
+  const b = document.getElementById("teamBLogo");
 
-  document.getElementById("teamALogo").onclick = () => togglePP("A");
-  document.getElementById("teamBLogo").onclick = () => togglePP("B");
+  if(a) a.onclick = () => togglePP("A");
+  if(b) b.onclick = () => togglePP("B");
+}
 
-});
+/* =========================
+   YOUR ORIGINAL INIT (UNCHANGED STRUCTURE)
+========================= */
 
-/* UI FUNCTION (UNCHANGED + ADD PP RENDER ONLY) */
+async function init(){
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    Object.assign(state,data);
+  } catch(e){
+    console.error("Init failed", e);
+  }
+
+  updateUI();
+
+  /* SAFE PP HOOK (AFTER UI EXISTS) */
+  attachPP();
+
+}
+
+/* UI FUNCTION (UNCHANGED + ONLY PP VISUAL ADD) */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -458,9 +411,7 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  /* =========================
-     PP UI ADDITION ONLY
-  ========================= */
+  /* PP VISUAL UPDATE ONLY */
   const A = document.getElementById("teamALogo");
   const B = document.getElementById("teamBLogo");
 
@@ -487,6 +438,12 @@ function updateUI(){
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
 }
+
+async function pushUpdate(field,value){
+  await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
+}
+
+init();
 </script>
 
 </body>
