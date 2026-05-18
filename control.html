@@ -54,7 +54,7 @@ body {
   justify-content: center;
   gap: 6px;
   text-align: center;
-  position: relative; /* needed for badge */
+  position: relative;
 }
 
 .team-name {
@@ -70,21 +70,20 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
-  cursor: pointer;
 }
 
-/* PP ACTIVE OUTLINE */
+/* =========================
+   PP ADD-ON ONLY (NEW CSS)
+========================= */
 .team-logo.pp-active {
   border: 3px solid yellow;
   box-shadow: 0 0 8px yellow;
 }
 
-/* PP BADGE (tight top-right of circle) */
 .pp-badge {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  transform: translate(50%, -50%);
+  top: 6px;
+  right: 6px;
   background: yellow;
   color: black;
   font-size: 11px;
@@ -99,6 +98,7 @@ body {
   display: block;
 }
 
+/* SCORE */
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -305,9 +305,20 @@ input:disabled {
   font-size: 16px;
 }
 
-.update-btn { background-color: #28a745; color: #fff; }
-.cancel-btn { background-color: #555; color: #fff; }
-.reset-btn { background-color: #dc3545; color: #fff; }
+.update-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: #fff;
+}
+
+.reset-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
 </style>
 </head>
 
@@ -326,6 +337,7 @@ input:disabled {
 
       <img id="teamALogo" class="team-logo">
 
+      <!-- PP badge ADDITION ONLY -->
       <div class="pp-badge">PP</div>
 
       <div id="teamAScore" class="team-score">0</div>
@@ -342,6 +354,7 @@ input:disabled {
 
       <img id="teamBLogo" class="team-logo">
 
+      <!-- PP badge ADDITION ONLY -->
       <div class="pp-badge">PP</div>
 
       <div id="teamBScore" class="team-score">0</div>
@@ -353,12 +366,16 @@ input:disabled {
 </div>
 
 <div class="clock-section">
+
   <button onclick="setPeriod()">Period</button>
+
   <div style="flex:2;">
     <div id="timer">20:00</div>
     <div id="period">Period 1</div>
   </div>
+
   <button onclick="setClock()">Clock</button>
+
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -396,12 +413,16 @@ let state = {
   Period:1,
   TimerSeconds:1200,
   Running:false,
+
+  /* =========================
+     PP ADDITION ONLY
+  ========================= */
   teamA_pp:false,
   teamB_pp:false
 };
 
 /* =========================
-   PP TOGGLE ONLY ADDITION
+   PP TOGGLE (ADDITION ONLY)
 ========================= */
 function togglePP(team){
 
@@ -414,13 +435,15 @@ function togglePP(team){
   updateUI();
 }
 
-/* LOGO CLICK ONLY ADDITION */
+/* LOGO CLICK (ADDITION ONLY) */
 document.addEventListener("DOMContentLoaded", () => {
+
   document.getElementById("teamALogo").onclick = () => togglePP("A");
   document.getElementById("teamBLogo").onclick = () => togglePP("B");
+
 });
 
-/* UI (UNCHANGED LOGIC) */
+/* UI FUNCTION (UNCHANGED + ADD PP RENDER ONLY) */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -435,6 +458,9 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
+  /* =========================
+     PP UI ADDITION ONLY
+  ========================= */
   const A = document.getElementById("teamALogo");
   const B = document.getElementById("teamBLogo");
 
