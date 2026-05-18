@@ -530,9 +530,12 @@ function updateTeams(){
 
   });
 
-  updateUI();
+updateUI();
+closeSettings();
 
-  closeSettings();
+setTimeout(() => {
+  refreshApp();
+}, 150);
 }
 
 /* ANIMATIONS */
@@ -694,6 +697,23 @@ async function pushUpdate(field,value){
   );
 }
 
+async function refreshApp(){
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+
+    Object.assign(state, data);
+
+    updateUI();
+    await loadTeamList();
+
+  } catch (e) {
+    console.error("Refresh failed", e);
+  }
+
+}
+  
 /* INIT */
 async function init(){
 
