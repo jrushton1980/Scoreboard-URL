@@ -388,6 +388,7 @@ function setPeriod(){
 }
 
 function updateScore(team,change){
+  tapFeedback();
   const key=team==="A"?"teamAScore":"teamBScore";
   const el=team==="A"?"teamAScore":"teamBScore";
   state[key]=Math.max(0,state[key]+change);
@@ -405,6 +406,17 @@ function updateShots(team,change){
   pushUpdate(key,state[key]);
 }
 
+function tapFeedback() {
+  /* Android vibration */
+  if (navigator.vibrate) {
+    navigator.vibrate(15);
+  }
+  /* iOS experimental haptics */
+  if (window.navigator && window.navigator.hapticFeedback) {
+    window.navigator.hapticFeedback();
+  }
+}
+  
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
