@@ -80,7 +80,7 @@ body {
   opacity: 0.9;
 }
 
-/* BUTTON FEEDBACK (UNCHANGED) */
+/* BUTTON FEEDBACK */
 button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -182,8 +182,10 @@ button:active {
   color: #fff;
 }
 
-/* ANIMATIONS (UNCHANGED) */
-.score-pop { animation: pop 0.25s ease; }
+/* ANIMATIONS */
+.score-pop {
+  animation: pop 0.25s ease;
+}
 
 @keyframes pop {
   0% { transform: scale(1); }
@@ -212,14 +214,64 @@ button:active {
   40% { color: #dc3545; }
   100% { color: #fff; }
 }
+
+/* SETTINGS MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.update-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: #fff;
+}
 </style>
 </head>
 
 <body>
 
+<button class="settings-btn" onclick="openSettings()">⚙️</button>
+
 <div class="scoreboard">
+
   <div class="team-row">
 
+    <!-- TEAM A -->
     <div class="team-block">
       <div id="teamAName" class="team-name">Team A</div>
       <img id="teamALogo" class="team-logo" src="">
@@ -227,8 +279,10 @@ button:active {
       <div id="teamAShots" class="team-shots">Shots: 0</div>
     </div>
 
+    <!-- DASH -->
     <div style="font-size:32px; padding-top:90px;">-</div>
 
+    <!-- TEAM B -->
     <div class="team-block">
       <div id="teamBName" class="team-name">Team B</div>
       <img id="teamBLogo" class="team-logo" src="">
@@ -237,9 +291,11 @@ button:active {
     </div>
 
   </div>
+
 </div>
 
 <div class="clock-section">
+
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -248,11 +304,11 @@ button:active {
   </div>
 
   <button onclick="setClock()">Clock</button>
+
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
 
-<!-- CONTROLS -->
 <div class="team-controls">
 
   <div class="team-column">
@@ -271,8 +327,21 @@ button:active {
 
 </div>
 
-<!-- SETTINGS -->
-<div id="settingsModal" class="modal"></div>
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="modal">
+
+  <div class="modal-content">
+
+    <h2>Settings</h2>
+
+    <div class="modal-buttons">
+      <button class="update-btn" onclick="resetGame()">Reset Game</button>
+      <button class="cancel-btn" onclick="closeSettings()">Close</button>
+    </div>
+
+  </div>
+
+</div>
 
 <script>
 
@@ -294,6 +363,15 @@ let state = {
 
 let timerInterval;
 
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsModal").style.display = "flex";
+}
+
+function closeSettings(){
+  document.getElementById("settingsModal").style.display = "none";
+}
+
 /* UI */
 function updateUI(){
 
@@ -313,44 +391,22 @@ function updateUI(){
   document.getElementById('period').textContent = `Period ${state.Period}`;
 
   const btn = document.getElementById('startStopBtn');
+
   btn.textContent = state.Running ? "Stop" : "Start";
   btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+
   btn.classList.toggle("pulse", state.Running);
 }
 
 function formatTime(sec){
+
   const m = Math.floor(sec/60);
   const s = sec%60;
+
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-/* SCORE */
-function updateScore(team,change){
-
-  const key = team==="A" ? "teamAScore" : "teamBScore";
-  const el = team==="A" ? "teamAScore" : "teamBScore";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-  animateValue(el,change);
-  pushUpdate(key,state[key]);
-}
-
-/* SHOTS */
-function updateShots(team,change){
-
-  const key = team==="A" ? "teamAShots" : "teamBShots";
-  const el = team==="A" ? "teamAShots" : "teamBShots";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-  animateValue(el,change);
-  pushUpdate(key,state[key]);
-}
-
-/* ANIMATION (UNCHANGED) */
+/* ANIMATIONS */
 function animateValue(id, change){
 
   const el = document.getElementById(id);
@@ -367,18 +423,49 @@ function animateValue(id, change){
   },1000);
 }
 
-/* RESET (RE-ADDED CLEAN) */
+/* SCORE */
+function updateScore(team,change){
+
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+/* SHOTS */
+function updateShots(team,change){
+
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+/* RESET */
 function resetGame(){
+
+  clearInterval(timerInterval);
 
   state.teamAScore = 0;
   state.teamBScore = 0;
   state.teamAShots = 0;
   state.teamBShots = 0;
+
   state.Period = 1;
   state.TimerSeconds = 1200;
   state.Running = false;
-
-  clearInterval(timerInterval);
 
   updateUI();
 
@@ -389,6 +476,8 @@ function resetGame(){
   pushUpdate("Period",1);
   pushUpdate("TimerSeconds",1200);
   pushUpdate("Running",false);
+
+  closeSettings();
 }
 
 /* TIMER */
@@ -397,55 +486,97 @@ function toggleClock(){
   state.Running = !state.Running;
 
   if(state.Running){
-    timerInterval = setInterval(()=>{
-      if(state.TimerSeconds > 0){
-        state.TimerSeconds--;
-        updateUI();
-        pushUpdate("TimerSeconds",state.TimerSeconds);
-      }
-    },1000);
-  } else {
+
     clearInterval(timerInterval);
+
+    timerInterval = setInterval(()=>{
+
+      if(state.TimerSeconds > 0){
+
+        state.TimerSeconds--;
+
+        document.getElementById('timer').textContent =
+          formatTime(state.TimerSeconds);
+
+        pushUpdate("TimerSeconds",state.TimerSeconds);
+
+      }
+
+    },1000);
+
+  } else {
+
+    clearInterval(timerInterval);
+
   }
 
   updateUI();
+
   pushUpdate("Running",state.Running);
 }
 
 /* CLOCK */
 function setClock(){
-  const input = prompt("Enter time MM:SS");
-  if(input){
-    const [m,s]=input.split(":").map(Number);
+
+  const input = prompt("Enter time (MM:SS):");
+
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+
+    const [m,s] = input.split(':').map(Number);
+
     state.TimerSeconds = m*60+s;
+
     updateUI();
+
     pushUpdate("TimerSeconds",state.TimerSeconds);
   }
 }
 
 function setPeriod(){
-  const val = parseInt(prompt("Period #"));
-  if(val>0){
+
+  const val = parseInt(prompt("Enter period number:"));
+
+  if(!isNaN(val) && val > 0){
+
     state.Period = val;
+
     updateUI();
+
     pushUpdate("Period",val);
   }
 }
 
-/* SYNC */
+/* GOOGLE SYNC */
 async function pushUpdate(field,value){
-  fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
+
+  try {
+
+    await fetch(
+      `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
+    );
+
+  } catch(err){
+
+    console.error("Push update failed", err);
+
+  }
 }
 
-/* INIT (UNCHANGED CORE FLOW) */
+/* INIT */
 async function init(){
 
   try {
+
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+
     const data = await res.json();
+
     Object.assign(state,data);
+
   } catch(e){
-    console.error("Init failed",e);
+
+    console.error("Init failed", e);
+
   }
 
   updateUI();
