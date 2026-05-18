@@ -391,7 +391,7 @@ let state = {
   teamBShots:0,
   teamBLogo:"",
   Period:1,
-  TimerSeconds:900,
+  TimerSeconds:1200,
   Running:false
 };
 
@@ -536,7 +536,7 @@ async function resetGame(){
   state.teamAShots = 0;
   state.teamBShots = 0;
   state.Period = 1;
-  state.TimerSeconds = 1200;
+  state.TimerSeconds = 900;
   state.Running = false;
 
   await Promise.all([
@@ -545,7 +545,7 @@ async function resetGame(){
     pushUpdate("teamAShots",0),
     pushUpdate("teamBShots",0),
     pushUpdate("Period",1),
-    pushUpdate("TimerSeconds",1200),
+    pushUpdate("TimerSeconds",900),
     pushUpdate("Running",false)
   ]);
 
