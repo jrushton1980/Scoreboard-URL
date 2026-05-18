@@ -61,6 +61,7 @@ body {
   font-size: 18px;
 }
 
+/* TEAM LOGOS */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -238,10 +239,35 @@ button:active {
   text-align: center;
 }
 
+.modal-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.team-setup {
+  flex: 1;
+}
+
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+input:disabled {
+  background-color: #444;
+  color: #aaa;
+}
+
 .modal-buttons {
   margin-top: 20px;
   display: flex;
   justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .modal-buttons button {
@@ -252,12 +278,17 @@ button:active {
 }
 
 .update-btn {
-  background-color: #dc3545;
+  background-color: #28a745;
   color: #fff;
 }
 
 .cancel-btn {
   background-color: #555;
+  color: #fff;
+}
+
+.reset-btn {
+  background-color: #dc3545;
   color: #fff;
 }
 </style>
@@ -273,10 +304,15 @@ button:active {
 
     <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
+
       <img id="teamALogo" class="team-logo" src="">
+
       <div id="teamAScore" class="team-score">0</div>
+
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
     <!-- DASH -->
@@ -284,14 +320,18 @@ button:active {
 
     <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
+
       <img id="teamBLogo" class="team-logo" src="">
+
       <div id="teamBScore" class="team-score">0</div>
+
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
   </div>
-
 </div>
 
 <div class="clock-section">
@@ -332,11 +372,28 @@ button:active {
 
   <div class="modal-content">
 
-    <h2>Settings</h2>
+    <h2>Team Setup</h2>
+
+    <div class="modal-section">
+
+      <div class="team-setup">
+        <h3>Team A</h3>
+        <select id="teamADropdown" onchange="handleDropdownChange('A')"></select>
+        <input id="teamACustom" type="text" placeholder="Custom Team Name">
+      </div>
+
+      <div class="team-setup">
+        <h3>Team B</h3>
+        <select id="teamBDropdown" onchange="handleDropdownChange('B')"></select>
+        <input id="teamBCustom" type="text" placeholder="Custom Team Name">
+      </div>
+
+    </div>
 
     <div class="modal-buttons">
-      <button class="update-btn" onclick="resetGame()">Reset Game</button>
-      <button class="cancel-btn" onclick="closeSettings()">Close</button>
+      <button class="update-btn" onclick="updateTeams()">Update</button>
+      <button class="cancel-btn" onclick="closeSettings()">Cancel</button>
+      <button class="reset-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
   </div>
@@ -344,7 +401,6 @@ button:active {
 </div>
 
 <script>
-
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
 
 let state = {
@@ -370,6 +426,164 @@ function openSettings(){
 
 function closeSettings(){
   document.getElementById("settingsModal").style.display = "none";
+}
+
+/* TEAM LIST */
+async function loadTeamList(){
+
+  try {
+
+    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
+    const list = await res.json();
+
+    const uniqueList = [...new Set(list)];
+
+    ["A","B"].forEach(team=>{
+
+      const dd = document.getElementById(`team${team}Dropdown`);
+
+      dd.innerHTML = "";
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "__custom__";
+      customOpt.textContent = "-- Custom --";
+      dd.appendChild(customOpt);
+
+      uniqueList.forEach(teamName=>{
+
+        if(teamName !== "-- Custom --"){
+
+          const opt = document.createElement("option");
+          opt.value = teamName;
+          opt.textContent = teamName;
+          dd.appendChild(opt);
+
+        }
+
+      });
+
+    });
+
+    preselectTeams();
+
+  } catch(err){
+    console.error("Failed loading team list", err);
+  }
+}
+
+function handleDropdownChange(team){
+
+  const dd = document.getElementById(`team${team}Dropdown`);
+  const input = document.getElementById(`team${team}Custom`);
+
+  input.disabled = dd.value !== "__custom__";
+}
+
+function preselectTeams(){
+
+  ["A","B"].forEach(team=>{
+
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const current = state[team==="A" ? "teamAName" : "teamBName"];
+
+    let found = false;
+
+    for(let i=0;i<dd.options.length;i++){
+
+      if(dd.options[i].value === current){
+
+        dd.selectedIndex = i;
+        found = true;
+        break;
+
+      }
+
+    }
+
+    if(!found){
+
+      dd.value = "__custom__";
+      input.value = current;
+      input.disabled = false;
+
+    } else {
+
+      input.disabled = dd.value !== "__custom__";
+
+    }
+
+  });
+}
+
+function updateTeams(){
+
+  ["A","B"].forEach(team=>{
+
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const name = dd.value === "__custom__"
+      ? input.value.trim()
+      : dd.value;
+
+    if(!name) return;
+
+    const field = team==="A" ? "teamAName" : "teamBName";
+
+    state[field] = name;
+
+    pushUpdate(field, name);
+
+  });
+
+  updateUI();
+
+  closeSettings();
+}
+
+/* RESET GAME */
+function resetGame(){
+
+  stopTimer();
+
+  state.teamAScore = 0;
+  state.teamBScore = 0;
+  state.teamAShots = 0;
+  state.teamBShots = 0;
+  state.Period = 1;
+  state.TimerSeconds = 1200;
+  state.Running = false;
+
+  updateUI();
+
+  pushUpdate("teamAScore",0);
+  pushUpdate("teamBScore",0);
+  pushUpdate("teamAShots",0);
+  pushUpdate("teamBShots",0);
+  pushUpdate("Period",1);
+  pushUpdate("TimerSeconds",1200);
+  pushUpdate("Running",false);
+
+  closeSettings();
+}
+
+/* ANIMATIONS */
+function animateValue(id, change){
+
+  const el = document.getElementById(id);
+
+  el.classList.remove("score-pop","flash-green","flash-red");
+
+  void el.offsetWidth;
+
+  el.classList.add("score-pop");
+  el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
 }
 
 /* UI */
@@ -406,108 +620,15 @@ function formatTime(sec){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-/* ANIMATIONS */
-function animateValue(id, change){
-
-  const el = document.getElementById(id);
-
-  el.classList.remove("score-pop","flash-green","flash-red");
-
-  void el.offsetWidth;
-
-  el.classList.add("score-pop");
-  el.classList.add(change > 0 ? "flash-green" : "flash-red");
-
-  setTimeout(()=>{
-    el.classList.remove("flash-green","flash-red");
-  },1000);
-}
-
-/* SCORE */
-function updateScore(team,change){
-
-  const key = team==="A" ? "teamAScore" : "teamBScore";
-  const el = team==="A" ? "teamAScore" : "teamBScore";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-/* SHOTS */
-function updateShots(team,change){
-
-  const key = team==="A" ? "teamAShots" : "teamBShots";
-  const el = team==="A" ? "teamAShots" : "teamBShots";
-
-  state[key] = Math.max(0,state[key]+change);
-
-  updateUI();
-
-  animateValue(el,change);
-
-  pushUpdate(key,state[key]);
-}
-
-/* RESET */
-function resetGame(){
-
-  clearInterval(timerInterval);
-
-  state.teamAScore = 0;
-  state.teamBScore = 0;
-  state.teamAShots = 0;
-  state.teamBShots = 0;
-
-  state.Period = 1;
-  state.TimerSeconds = 1200;
-  state.Running = false;
-
-  updateUI();
-
-  pushUpdate("teamAScore",0);
-  pushUpdate("teamBScore",0);
-  pushUpdate("teamAShots",0);
-  pushUpdate("teamBShots",0);
-  pushUpdate("Period",1);
-  pushUpdate("TimerSeconds",1200);
-  pushUpdate("Running",false);
-
-  closeSettings();
-}
-
 /* TIMER */
 function toggleClock(){
 
   state.Running = !state.Running;
 
   if(state.Running){
-
-    clearInterval(timerInterval);
-
-    timerInterval = setInterval(()=>{
-
-      if(state.TimerSeconds > 0){
-
-        state.TimerSeconds--;
-
-        document.getElementById('timer').textContent =
-          formatTime(state.TimerSeconds);
-
-        pushUpdate("TimerSeconds",state.TimerSeconds);
-
-      }
-
-    },1000);
-
+    startTimer();
   } else {
-
-    clearInterval(timerInterval);
-
+    stopTimer();
   }
 
   updateUI();
@@ -515,7 +636,31 @@ function toggleClock(){
   pushUpdate("Running",state.Running);
 }
 
-/* CLOCK */
+function startTimer(){
+
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(()=>{
+
+    if(state.TimerSeconds > 0){
+
+      state.TimerSeconds--;
+
+      document.getElementById('timer').textContent =
+        formatTime(state.TimerSeconds);
+
+      pushUpdate("TimerSeconds",state.TimerSeconds);
+
+    }
+
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+/* CONTROLS */
 function setClock(){
 
   const input = prompt("Enter time (MM:SS):");
@@ -546,20 +691,40 @@ function setPeriod(){
   }
 }
 
+function updateScore(team,change){
+
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
+function updateShots(team,change){
+
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+
+  animateValue(el,change);
+
+  pushUpdate(key,state[key]);
+}
+
 /* GOOGLE SYNC */
 async function pushUpdate(field,value){
 
-  try {
-
-    await fetch(
-      `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
-    );
-
-  } catch(err){
-
-    console.error("Push update failed", err);
-
-  }
+  await fetch(
+    `${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`
+  );
 }
 
 /* INIT */
@@ -576,14 +741,14 @@ async function init(){
   } catch(e){
 
     console.error("Init failed", e);
-
   }
 
   updateUI();
+
+  await loadTeamList();
 }
 
 init();
-
 </script>
 
 </body>
