@@ -526,16 +526,50 @@ async function updateTeams(){
       ? "teamAName"
       : "teamBName";
 
-    /* instant local update */
     state[field] = name;
   }
 
-  /* update UI immediately */
+  /* instant UI update */
   updateUI();
 
-  /* close instantly */
+  /* close modal immediately */
   closeSettings();
 
+  /* allow Safari to repaint FIRST */
+  requestAnimationFrame(async () => {
+
+    /* background sync */
+    for (const team of ["A","B"]) {
+
+      const field = team==="A"
+        ? "teamAName"
+        : "teamBName";
+
+      pushUpdate(field, state[field]);
+    }
+
+    /* delayed refresh for logos */
+    setTimeout(async ()=>{
+
+      try {
+
+        const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+        const data = await res.json();
+
+        Object.assign(state, data);
+
+        updateUI();
+
+      } catch(err){
+
+        console.error(err);
+
+      }
+
+    }, 500);
+
+  });
+}
   /* send updates in background */
   for (const team of ["A","B"]) {
 
