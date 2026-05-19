@@ -44,9 +44,8 @@ body {
   border-radius:15px; 
   padding:10px 15px; 
   z-index:1; 
-  border: 2px solid transparent; /* Hidden baseline card border */
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  /* Removed layout-shrinking borders from baseline card state */
+  transition: outline 0.2s ease, box-shadow 0.2s ease;
 }
 
 .team-info { 
@@ -94,15 +93,16 @@ body {
 
 /* --- ACTIVE STATE STYLES (Power Play) --- */
 
-/* 1. Entire Card Frame Yellow Border Outline */
+/* 1. Entire Card Frame Yellow Outline (Uses outline to preserve strict baseline card sizing) */
 .team-card.active {
-  border-color: #ffd700;
+  outline: 2px solid #ffd700;
+  outline-offset: -2px; /* Pulls outline cleanly onto the edge radius */
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
 }
 
 /* 2. Team Circle Logo Yellow Border Outline */
 .logo-container.active .team-logo {
-  border: 2.5px solid #ffd700;
+  border-color: #ffd700;
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
