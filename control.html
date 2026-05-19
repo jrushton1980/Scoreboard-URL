@@ -1,316 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scoreboard Control</title>
-
-<style>
-body {
-  background-color: #111;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* SETTINGS BUTTON */
-.settings-btn {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 28px;
-  z-index: 9999;
-  cursor: pointer;
-}
-
-/* SCOREBOARD */
-.scoreboard {
-  width: 95%;
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 12px 10px;
-  margin-bottom: 12px;
-}
-
-.team-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.team-block {
-  width: 45%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-align: center;
-}
-
-.team-name {
-  font-weight: bold;
-  font-size: 18px;
-}
-
-/* TEAM LOGOS */
-.team-logo {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  background: #222;
-}
-
-/* ✅ PP ACTIVE STATE (ADDED ONLY) */
-.team-logo.pp-active {
-  border: 2px solid yellow;
-  position: relative;
-  box-shadow: 0 0 10px yellow;
-}
-
-/* PP FLAG (ADDED ONLY) */
-.pp-flag {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: yellow;
-  color: black;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 4px;
-  border-radius: 4px;
-  pointer-events: none;
-}
-
-/* wrap behavior WITHOUT changing HTML structure */
-.logo-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-.team-score {
-  font-size: 40px;
-  font-weight: bold;
-}
-
-.team-shots {
-  font-size: 20px;
-  opacity: 0.9;
-}
-
-/* BUTTON FEEDBACK */
-button {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition: transform 0.04s ease, opacity 0.04s ease;
-}
-
-button:active {
-  transform: scale(0.90);
-  opacity: 0.7;
-}
-
-/* CLOCK */
-.clock-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 95%;
-  background: #1d1d1d;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 12px;
-}
-
-.clock-section button {
-  flex: 1;
-  font-size: 18px;
-  padding: 14px 0;
-  margin: 0 4px;
-  border-radius: 8px;
-  border: none;
-  background-color: #333;
-  color: #fff;
-}
-
-#timer {
-  font-size: 28px;
-  font-weight: bold;
-  text-align: center;
-}
-
-#period {
-  font-size: 18px;
-  text-align: center;
-}
-
-/* START BUTTON */
-#startStopBtn {
-  width: 95%;
-  font-size: 28px;
-  padding: 40px 0;
-  border-radius: 12px;
-  border: none;
-  color: white;
-  background-color: #28a745;
-  margin-bottom: 16px;
-}
-
-/* PULSE */
-.pulse {
-  animation: pulseAnim 1.2s infinite;
-}
-
-@keyframes pulseAnim {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* CONTROLS */
-.team-controls {
-  display: flex;
-  justify-content: space-between;
-  width: 95%;
-  gap: 10px;
-}
-
-.team-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.team-column button.plus {
-  font-size: 24px;
-  padding: 40px 0;
-  border-radius: 10px;
-  border: none;
-  background-color: #555;
-  color: #fff;
-}
-
-.team-column button.minus {
-  font-size: 24px;
-  padding: 12px 0;
-  border-radius: 10px;
-  border: none;
-  background-color: #777;
-  color: #fff;
-}
-
-/* ANIMATIONS */
-.score-pop {
-  animation: pop 0.25s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.4); }
-  100% { transform: scale(1); }
-}
-
-.flash-green {
-  animation: flashGreen 1s ease;
-  font-weight: bold;
-}
-
-.flash-red {
-  animation: flashRed 1s ease;
-  font-weight: bold;
-}
-
-@keyframes flashGreen {
-  0% { color: #fff; }
-  40% { color: #28a745; }
-  100% { color: #fff; }
-}
-
-@keyframes flashRed {
-  0% { color: #fff; }
-  40% { color: #dc3545; }
-  100% { color: #fff; }
-}
-
-/* SETTINGS MODAL */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 10000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.8);
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background: #222;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-  text-align: center;
-}
-</style>
-</head>
-
-<body>
-
-<button class="settings-btn" onclick="openSettings()">⚙️</button>
-
-<div class="scoreboard">
-
-  <div class="team-row">
-
-    <!-- TEAM A -->
-    <div class="team-block">
-
-      <div id="teamAName" class="team-name">Team A</div>
-
-      <div class="logo-wrap">
-        <img id="teamALogo" class="team-logo" src="" onclick="togglePP('A')">
-        <div id="ppAFlag" class="pp-flag" style="display:none;">PP</div>
-      </div>
-
-      <div id="teamAScore" class="team-score">0</div>
-      <div id="teamAShots" class="team-shots">Shots: 0</div>
-
-    </div>
-
-    <div style="font-size:32px; padding-top:90px;">-</div>
-
-    <!-- TEAM B -->
-    <div class="team-block">
-
-      <div id="teamBName" class="team-name">Team B</div>
-
-      <div class="logo-wrap">
-        <img id="teamBLogo" class="team-logo" src="" onclick="togglePP('B')">
-        <div id="ppBFlag" class="pp-flag" style="display:none;">PP</div>
-      </div>
-
-      <div id="teamBScore" class="team-score">0</div>
-      <div id="teamBShots" class="team-shots">Shots: 0</div>
-
-    </div>
-
-  </div>
-</div>
-
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD8EO--akOZZZNKGOEHk4mpc4Gk-1WXbiHyvVIOaSmxI5f20Wiwwh7XIyEc4TaOlxD/exec";
 
@@ -327,24 +14,147 @@ let state = {
   TimerSeconds:1200,
   Running:false,
 
-  /* ✅ ADDED ONLY */
+  // ✅ ADD ONLY (PP STATE)
   teamA_pp:false,
   teamB_pp:false
 };
 
-function togglePP(team){
+let timerInterval;
 
-  const key = team === "A" ? "teamA_pp" : "teamB_pp";
-
-  state[key] = !state[key];
-
-  pushUpdate(key, state[key]);
-
-  updateUI();
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsModal").style.display = "flex";
 }
 
-/* KEEP YOUR ORIGINAL FUNCTIONS BELOW (UNCHANGED) */
+function closeSettings(){
+  document.getElementById("settingsModal").style.display = "none";
+}
 
+/* TEAM LIST */
+async function loadTeamList(){
+  try {
+    const res = await fetch(`${SCRIPT_URL}?list=true&t=${Date.now()}`);
+    const list = await res.json();
+    const uniqueList = [...new Set(list)];
+
+    ["A","B"].forEach(team=>{
+      const dd = document.getElementById(`team${team}Dropdown`);
+      dd.innerHTML = "";
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "__custom__";
+      customOpt.textContent = "-- Custom --";
+      dd.appendChild(customOpt);
+
+      uniqueList.forEach(teamName=>{
+        if(teamName !== "-- Custom --"){
+          const opt = document.createElement("option");
+          opt.value = teamName;
+          opt.textContent = teamName;
+          dd.appendChild(opt);
+        }
+      });
+    });
+
+    preselectTeams();
+  } catch(err){
+    console.error("Failed loading team list", err);
+  }
+}
+
+function handleDropdownChange(team){
+  const dd = document.getElementById(`team${team}Dropdown`);
+  const input = document.getElementById(`team${team}Custom`);
+  input.disabled = dd.value !== "__custom__";
+}
+
+function preselectTeams(){
+  ["A","B"].forEach(team=>{
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const current = state[team==="A" ? "teamAName" : "teamBName"];
+
+    let found = false;
+
+    for(let i=0;i<dd.options.length;i++){
+      if(dd.options[i].value === current){
+        dd.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+
+    if(!found){
+      dd.value = "__custom__";
+      input.value = current;
+      input.disabled = false;
+    } else {
+      input.disabled = dd.value !== "__custom__";
+    }
+  });
+}
+
+function updateTeams(){
+  ["A","B"].forEach(team=>{
+    const dd = document.getElementById(`team${team}Dropdown`);
+    const input = document.getElementById(`team${team}Custom`);
+
+    const name = dd.value === "__custom__"
+      ? input.value.trim()
+      : dd.value;
+
+    if(!name) return;
+
+    const field = team==="A" ? "teamAName" : "teamBName";
+
+    state[field] = name;
+    pushUpdate(field, name);
+  });
+
+  updateUI();
+  closeSettings();
+}
+
+/* RESET GAME */
+function resetGame(){
+  stopTimer();
+
+  state.teamAScore = 0;
+  state.teamBScore = 0;
+  state.teamAShots = 0;
+  state.teamBShots = 0;
+  state.Period = 1;
+  state.TimerSeconds = 900;
+  state.Running = false;
+
+  updateUI();
+
+  pushUpdate("teamAScore",0);
+  pushUpdate("teamBScore",0);
+  pushUpdate("teamAShots",0);
+  pushUpdate("teamBShots",0);
+  pushUpdate("Period",1);
+  pushUpdate("TimerSeconds",900);
+  pushUpdate("Running",false);
+
+  closeSettings();
+}
+
+/* ANIMATION */
+function animateValue(id, change){
+  const el = document.getElementById(id);
+  el.classList.remove("score-pop","flash-green","flash-red");
+  void el.offsetWidth;
+  el.classList.add("score-pop");
+  el.classList.add(change > 0 ? "flash-green" : "flash-red");
+
+  setTimeout(()=>{
+    el.classList.remove("flash-green","flash-red");
+  },1000);
+}
+
+/* UI */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -359,23 +169,126 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  /* ✅ PP UI ONLY */
-  document.getElementById('ppAFlag').style.display = state.teamA_pp ? "block" : "none";
-  document.getElementById('ppBFlag').style.display = state.teamB_pp ? "block" : "none";
+  document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+  document.getElementById('period').textContent = `Period ${state.Period}`;
 
-  const aLogo = document.getElementById('teamALogo');
-  const bLogo = document.getElementById('teamBLogo');
+  const btn = document.getElementById('startStopBtn');
+  btn.textContent = state.Running ? "Stop" : "Start";
+  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
+  btn.classList.toggle("pulse", state.Running);
 
-  aLogo.style.borderColor = state.teamA_pp ? "yellow" : "#fff";
-  bLogo.style.borderColor = state.teamB_pp ? "yellow" : "#fff";
+  /* =========================
+     ✅ PP VISUAL (ONLY ADDITION)
+     ========================= */
+  const aLogo = document.getElementById("teamALogo");
+  const bLogo = document.getElementById("teamBLogo");
+
+  aLogo.style.border = state.teamA_pp ? "3px solid yellow" : "2px solid #fff";
+  bLogo.style.border = state.teamB_pp ? "3px solid yellow" : "2px solid #fff";
 }
 
+/* TIMER */
+function toggleClock(){
+  state.Running = !state.Running;
+
+  if(state.Running) startTimer();
+  else stopTimer();
+
+  updateUI();
+  pushUpdate("Running",state.Running);
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(()=>{
+    if(state.TimerSeconds > 0){
+      state.TimerSeconds--;
+      document.getElementById('timer').textContent = formatTime(state.TimerSeconds);
+      pushUpdate("TimerSeconds",state.TimerSeconds);
+    }
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+/* CONTROLS */
+function setClock(){
+  const input = prompt("Enter time (MM:SS):");
+
+  if(input && /^\d{1,2}:\d{2}$/.test(input)){
+    const [m,s] = input.split(':').map(Number);
+    state.TimerSeconds = m*60+s;
+    updateUI();
+    pushUpdate("TimerSeconds",state.TimerSeconds);
+  }
+}
+
+function setPeriod(){
+  const val = parseInt(prompt("Enter period number:"));
+
+  if(!isNaN(val) && val > 0){
+    state.Period = val;
+    updateUI();
+    pushUpdate("Period",val);
+  }
+}
+
+function updateScore(team,change){
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  const el = team==="A" ? "teamAScore" : "teamBScore";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+  animateValue(el,change);
+  pushUpdate(key,state[key]);
+}
+
+function updateShots(team,change){
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  const el = team==="A" ? "teamAShots" : "teamBShots";
+
+  state[key] = Math.max(0,state[key]+change);
+
+  updateUI();
+  animateValue(el,change);
+  pushUpdate(key,state[key]);
+}
+
+/* =========================
+   ✅ NEW: PP TOGGLE (SAFE ADD)
+   ========================= */
+function togglePP(team){
+
+  const key = team === "A" ? "teamA_pp" : "teamB_pp";
+
+  state[key] = !state[key];
+
+  pushUpdate(key, state[key]);
+  updateUI();
+}
+
+/* GOOGLE SYNC */
 async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
-/* rest of your original script remains untouched */
-</script>
+/* INIT */
+async function init(){
+  try {
+    const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    Object.assign(state,data);
+  } catch(e){
+    console.error("Init failed", e);
+  }
 
-</body>
-</html>
+  updateUI();
+  await loadTeamList();
+}
+
+init();
+</script>
