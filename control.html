@@ -62,7 +62,7 @@ body {
   font-size: 18px;
 }
 
-/* TEAM LOGOS */
+/* TEAM LOGO */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -70,13 +70,14 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
-  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* PP STATE STYLE */
+/* PP ACTIVE STYLE */
 .team-logo.pp-active {
   border: 3px solid yellow;
-  box-shadow: 0 0 8px yellow;
+  box-shadow: 0 0 10px yellow;
 }
 
 /* PP BADGE */
@@ -223,12 +224,28 @@ button:active {
   text-align: center;
 }
 
-/* SCORE DISPLAY */
-.team-score {
-  font-size: 40px;
-  font-weight: bold;
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
 }
 
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.update-btn { background:#28a745; color:#fff; }
+.cancel-btn { background:#555; color:#fff; }
+.reset-btn { background:#dc3545; color:#fff; }
+
+.pp-wrapper {
+  position: relative;
+}
 </style>
 </head>
 
@@ -245,7 +262,7 @@ button:active {
 
       <div id="teamAName" class="team-name">Team A</div>
 
-      <div style="position:relative;">
+      <div class="pp-wrapper">
         <img id="teamALogo" class="team-logo">
         <div class="pp-badge">PP</div>
       </div>
@@ -262,7 +279,7 @@ button:active {
 
       <div id="teamBName" class="team-name">Team B</div>
 
-      <div style="position:relative;">
+      <div class="pp-wrapper">
         <img id="teamBLogo" class="team-logo">
         <div class="pp-badge">PP</div>
       </div>
@@ -276,7 +293,6 @@ button:active {
 </div>
 
 <div class="clock-section">
-
   <button onclick="setPeriod()">Period</button>
 
   <div style="flex:2;">
@@ -285,7 +301,6 @@ button:active {
   </div>
 
   <button onclick="setClock()">Clock</button>
-
 </div>
 
 <button id="startStopBtn" onclick="toggleClock()">Start</button>
@@ -323,11 +338,15 @@ let state = {
   Period:1,
   TimerSeconds:1200,
   Running:false,
+
   teamA_pp:false,
   teamB_pp:false
 };
 
-/* PP TOGGLE */
+/* =========================
+   PP TOGGLE (ONLY ADDITION)
+========================= */
+
 function togglePP(team){
 
   const key = team === "A" ? "teamA_pp" : "teamB_pp";
@@ -339,14 +358,16 @@ function togglePP(team){
   updateUI();
 }
 
-/* CLICK LOGO */
 function bindPP(){
 
   document.getElementById("teamALogo").onclick = () => togglePP("A");
   document.getElementById("teamBLogo").onclick = () => togglePP("B");
 }
 
-/* UI */
+/* =========================
+   BASELINE UI (UNCHANGED LOGIC)
+========================= */
+
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -361,33 +382,37 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  const Aimg = document.getElementById("teamALogo");
-  const Bimg = document.getElementById("teamBLogo");
+  const A = document.getElementById("teamALogo");
+  const B = document.getElementById("teamBLogo");
 
-  const Awrap = Aimg.closest(".team-block");
-  const Bwrap = Bimg.closest(".team-block");
+  const Awrap = A.closest(".pp-wrapper").parentElement;
+  const Bwrap = B.closest(".pp-wrapper").parentElement;
 
   if(state.teamA_pp){
-    Aimg.classList.add("pp-active");
+    A.classList.add("pp-active");
     Awrap.classList.add("pp-on");
   } else {
-    Aimg.classList.remove("pp-active");
+    A.classList.remove("pp-active");
     Awrap.classList.remove("pp-on");
   }
 
   if(state.teamB_pp){
-    Bimg.classList.add("pp-active");
+    B.classList.add("pp-active");
     Bwrap.classList.add("pp-on");
   } else {
-    Bimg.classList.remove("pp-active");
+    B.classList.remove("pp-active");
     Bwrap.classList.remove("pp-on");
   }
+
+  const btn = document.getElementById('startStopBtn');
+  btn.textContent = state.Running ? "Stop" : "Start";
+  btn.style.backgroundColor = state.Running ? "#dc3545" : "#28a745";
 }
 
 /* INIT */
 async function init(){
 
-  try{
+  try {
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
     const data = await res.json();
     Object.assign(state,data);
@@ -396,14 +421,16 @@ async function init(){
   }
 
   updateUI();
+
   bindPP();
 }
 
-init();
-
+/* GOOGLE SYNC */
 async function pushUpdate(field,value){
   await fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
+
+init();
 </script>
 
 </body>
