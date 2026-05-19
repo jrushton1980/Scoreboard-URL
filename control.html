@@ -17,6 +17,7 @@ body {
   align-items: center;
 }
 
+/* SETTINGS BUTTON */
 .settings-btn {
   position: fixed;
   top: 10px;
@@ -30,6 +31,7 @@ body {
   cursor: pointer;
 }
 
+/* SCOREBOARD */
 .scoreboard {
   width: 95%;
   background: #1e1e1e;
@@ -59,7 +61,12 @@ body {
   font-size: 18px;
 }
 
-/* LOGO BASE */
+/* LOGO */
+.logo-wrap {
+  position: relative;
+  display: inline-block;
+}
+
 .team-logo {
   width: 72px;
   height: 72px;
@@ -67,7 +74,7 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
-  position: relative;
+  cursor: pointer;
 }
 
 /* PP STATE */
@@ -88,11 +95,7 @@ body {
   padding: 2px 4px;
   border-radius: 6px;
   transform: translate(20%, -20%);
-}
-
-.logo-wrap {
-  position: relative;
-  display: inline-block;
+  display: none;
 }
 
 .team-score {
@@ -105,6 +108,7 @@ body {
   opacity: 0.9;
 }
 
+/* BUTTON FEEDBACK */
 button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -116,6 +120,7 @@ button:active {
   opacity: 0.7;
 }
 
+/* CLOCK */
 .clock-section {
   display: flex;
   justify-content: space-between;
@@ -149,6 +154,7 @@ button:active {
   text-align: center;
 }
 
+/* START BUTTON */
 #startStopBtn {
   width: 95%;
   font-size: 28px;
@@ -160,6 +166,18 @@ button:active {
   margin-bottom: 16px;
 }
 
+/* PULSE */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* CONTROLS */
 .team-controls {
   display: flex;
   justify-content: space-between;
@@ -191,6 +209,39 @@ button:active {
   background-color: #777;
   color: #fff;
 }
+
+/* ANIMATIONS (RESTORED) */
+.score-pop {
+  animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.flash-green {
+  animation: flashGreen 1s ease;
+  font-weight: bold;
+}
+
+.flash-red {
+  animation: flashRed 1s ease;
+  font-weight: bold;
+}
+
+@keyframes flashGreen {
+  0% { color: #fff; }
+  40% { color: #28a745; }
+  100% { color: #fff; }
+}
+
+@keyframes flashRed {
+  0% { color: #fff; }
+  40% { color: #dc3545; }
+  100% { color: #fff; }
+}
 </style>
 </head>
 
@@ -208,7 +259,7 @@ button:active {
 
       <div class="logo-wrap">
         <img id="teamALogo" class="team-logo" onclick="togglePP('A')">
-        <div id="ppA" class="pp-badge" style="display:none;">PP</div>
+        <div id="ppA" class="pp-badge">PP</div>
       </div>
 
       <div id="teamAScore" class="team-score">0</div>
@@ -223,7 +274,7 @@ button:active {
 
       <div class="logo-wrap">
         <img id="teamBLogo" class="team-logo" onclick="togglePP('B')">
-        <div id="ppB" class="pp-badge" style="display:none;">PP</div>
+        <div id="ppB" class="pp-badge">PP</div>
       </div>
 
       <div id="teamBScore" class="team-score">0</div>
@@ -283,21 +334,15 @@ let state = {
 
 let timerInterval;
 
-/* ===== PP TOGGLE ===== */
+/* ===== PP ===== */
 function togglePP(team){
-
-  const key = team === "A" ? "teamA_pp" : "teamB_pp";
-
+  const key = team==="A" ? "teamA_pp" : "teamB_pp";
   state[key] = !state[key];
-
   renderPP();
-
-  pushUpdate(key, state[key]);
+  pushUpdate(key,state[key]);
 }
 
-/* VISUAL PP */
 function renderPP(){
-
   const a = state.teamA_pp;
   const b = state.teamB_pp;
 
@@ -308,20 +353,21 @@ function renderPP(){
   document.getElementById("ppB").style.display = b ? "block" : "none";
 }
 
-/* KEEP EVERYTHING ELSE SAME */
+/* ===== CORE ===== */
 function openSettings(){ document.getElementById("settingsModal").style.display="flex"; }
 function closeSettings(){ document.getElementById("settingsModal").style.display="none"; }
 
 function toggleClock(){
   state.Running = !state.Running;
   updateUI();
-  pushUpdate("Running", state.Running);
+  pushUpdate("Running",state.Running);
 }
 
 function updateScore(team,change){
   const key = team==="A" ? "teamAScore":"teamBScore";
   state[key] = Math.max(0,state[key]+change);
   updateUI();
+  animateValue(key,change);
   pushUpdate(key,state[key]);
 }
 
@@ -329,23 +375,41 @@ function updateShots(team,change){
   const key = team==="A" ? "teamAShots":"teamBShots";
   state[key] = Math.max(0,state[key]+change);
   updateUI();
+  animateValue(key,change);
   pushUpdate(key,state[key]);
 }
 
+/* ===== ANIMATIONS RESTORED ===== */
+function animateValue(id, change){
+  const el = document.getElementById(id);
+  el.classList.remove("score-pop","flash-green","flash-red");
+  void el.offsetWidth;
+  el.classList.add("score-pop");
+  el.classList.add(change>0?"flash-green":"flash-red");
+  setTimeout(()=>el.classList.remove("flash-green","flash-red"),1000);
+}
+
+/* ===== UI ===== */
 function updateUI(){
   document.getElementById("teamAName").textContent = state.teamAName;
   document.getElementById("teamBName").textContent = state.teamBName;
   document.getElementById("teamAScore").textContent = state.teamAScore;
   document.getElementById("teamBScore").textContent = state.teamBScore;
-  document.getElementById("teamAShots").textContent = "Shots: " + state.teamAShots;
-  document.getElementById("teamBShots").textContent = "Shots: " + state.teamBShots;
+  document.getElementById("teamAShots").textContent = "Shots: "+state.teamAShots;
+  document.getElementById("teamBShots").textContent = "Shots: "+state.teamBShots;
+
+  document.getElementById("teamALogo").src = state.teamALogo || "";
+  document.getElementById("teamBLogo").src = state.teamBLogo || "";
+
   renderPP();
 }
 
+/* ===== PUSH ===== */
 async function pushUpdate(field,value){
   fetch(`${SCRIPT_URL}?update=true&field=${field}&value=${encodeURIComponent(value)}`);
 }
 
+/* ===== INIT ===== */
 async function init(){
   try{
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
@@ -357,7 +421,7 @@ async function init(){
 
 init();
 
-/* IMPORTANT FIX */
+/* GLOBAL FIX */
 Object.assign(window,{
   toggleClock,
   updateScore,
