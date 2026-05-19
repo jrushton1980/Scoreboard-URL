@@ -61,14 +61,14 @@ body {
   font-size: 18px;
 }
 
-/* LOGO WRAPPER (ONLY ADDITION) */
+/* WRAPPER ADDED (safe) */
 .logo-wrap {
   position: relative;
   width: 72px;
   height: 72px;
 }
 
-/* TEAM LOGO */
+/* TEAM LOGOS (UNCHANGED VISUALLY) */
 .team-logo {
   width: 72px;
   height: 72px;
@@ -76,30 +76,27 @@ body {
   border-radius: 50%;
   border: 2px solid #fff;
   background: #222;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease;
 }
 
-/* PP ACTIVE BORDER */
-.pp-on {
-  border-color: #ffd400 !important;
-}
-
-/* PP FLAG */
+/* PP INDICATOR */
 .pp-flag {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   background: #ffd400;
-  color: #000;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 5px;
-  border-radius: 4px;
+  border: 2px solid #111;
   display: none;
+  z-index: 5;
 }
 
-/* SCORE */
+.pp-active .team-logo {
+  border: 2px solid #ffd400;
+}
+
+/* SCORE / SHOTS */
 .team-score {
   font-size: 40px;
   font-weight: bold;
@@ -110,7 +107,7 @@ body {
   opacity: 0.9;
 }
 
-/* BUTTON FEEDBACK (UNCHANGED) */
+/* BUTTON FEEDBACK */
 button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -168,7 +165,18 @@ button:active {
   margin-bottom: 16px;
 }
 
-/* CONTROLS (UNCHANGED) */
+/* PULSE */
+.pulse {
+  animation: pulseAnim 1.2s infinite;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* CONTROLS */
 .team-controls {
   display: flex;
   justify-content: space-between;
@@ -186,6 +194,7 @@ button:active {
 .team-column button.plus {
   font-size: 24px;
   padding: 40px 0;
+  border-radius: 10px;
   border: none;
   background-color: #555;
   color: #fff;
@@ -194,13 +203,16 @@ button:active {
 .team-column button.minus {
   font-size: 24px;
   padding: 12px 0;
+  border-radius: 10px;
   border: none;
   background-color: #777;
   color: #fff;
 }
 
-/* ANIMATIONS (UNCHANGED) */
-.score-pop { animation: pop 0.25s ease; }
+/* ANIMATIONS */
+.score-pop {
+  animation: pop 0.25s ease;
+}
 
 @keyframes pop {
   0% { transform: scale(1); }
@@ -230,7 +242,7 @@ button:active {
   100% { color: #fff; }
 }
 
-/* MODAL (UNCHANGED) */
+/* SETTINGS MODAL */
 .modal {
   display: none;
   position: fixed;
@@ -252,6 +264,48 @@ button:active {
   max-width: 500px;
   text-align: center;
 }
+
+.modal-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.team-setup {
+  flex: 1;
+}
+
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+input:disabled {
+  background-color: #444;
+  color: #aaa;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.update-btn { background-color: #28a745; color: #fff; }
+.cancel-btn { background-color: #555; color: #fff; }
+.reset-btn { background-color: #dc3545; color: #fff; }
 </style>
 </head>
 
@@ -260,36 +314,70 @@ button:active {
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
 
 <div class="scoreboard">
+
   <div class="team-row">
 
     <!-- TEAM A -->
     <div class="team-block">
+
       <div id="teamAName" class="team-name">Team A</div>
 
-      <div class="logo-wrap">
-        <img id="teamALogo" class="team-logo">
-        <div class="pp-flag">PP</div>
+      <div class="logo-wrap" id="teamAWrap">
+        <img id="teamALogo" class="team-logo" src="">
+        <div id="teamAPP" class="pp-flag"></div>
       </div>
 
       <div id="teamAScore" class="team-score">0</div>
       <div id="teamAShots" class="team-shots">Shots: 0</div>
+
     </div>
 
     <div style="font-size:32px; padding-top:90px;">-</div>
 
     <!-- TEAM B -->
     <div class="team-block">
+
       <div id="teamBName" class="team-name">Team B</div>
 
-      <div class="logo-wrap">
-        <img id="teamBLogo" class="team-logo">
-        <div class="pp-flag">PP</div>
+      <div class="logo-wrap" id="teamBWrap">
+        <img id="teamBLogo" class="team-logo" src="">
+        <div id="teamBPP" class="pp-flag"></div>
       </div>
 
       <div id="teamBScore" class="team-score">0</div>
       <div id="teamBShots" class="team-shots">Shots: 0</div>
+
     </div>
 
+  </div>
+</div>
+
+<div class="clock-section">
+  <button onclick="setPeriod()">Period</button>
+
+  <div style="flex:2;">
+    <div id="timer">20:00</div>
+    <div id="period">Period 1</div>
+  </div>
+
+  <button onclick="setClock()">Clock</button>
+</div>
+
+<button id="startStopBtn" onclick="toggleClock()">Start</button>
+
+<div class="team-controls">
+  <div class="team-column">
+    <button class="plus" onclick="updateShots('A',1)">+1 Shot</button>
+    <button class="minus" onclick="updateShots('A',-1)">-1 Shot</button>
+    <button class="plus" onclick="updateScore('A',1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('A',-1)">-1 Goal</button>
+  </div>
+
+  <div class="team-column">
+    <button class="plus" onclick="updateShots('B',1)">+1 Shot</button>
+    <button class="minus" onclick="updateShots('B',-1)">-1 Shot</button>
+    <button class="plus" onclick="updateScore('B',1)">+1 Goal</button>
+    <button class="minus" onclick="updateScore('B',-1)">-1 Goal</button>
   </div>
 </div>
 
@@ -301,42 +389,18 @@ let state = {
   teamAScore:0,
   teamAShots:0,
   teamALogo:"",
-  teamA_pp:false,
-
   teamBName:"Team B",
   teamBScore:0,
   teamBShots:0,
   teamBLogo:"",
-  teamB_pp:false,
-
   Period:1,
   TimerSeconds:1200,
   Running:false
 };
 
-/* ONLY PP RENDER */
-function renderPP() {
+let timerInterval;
 
-  const aLogo = document.getElementById("teamALogo");
-  const bLogo = document.getElementById("teamBLogo");
-
-  const aWrap = aLogo.parentElement;
-  const bWrap = bLogo.parentElement;
-
-  const aFlag = aWrap.querySelector(".pp-flag");
-  const bFlag = bWrap.querySelector(".pp-flag");
-
-  const aOn = state.teamA_pp === true || state.teamA_pp === "true" || state.teamA_pp === "TRUE";
-  const bOn = state.teamB_pp === true || state.teamB_pp === "true" || state.teamB_pp === "TRUE";
-
-  aLogo.classList.toggle("pp-on", aOn);
-  bLogo.classList.toggle("pp-on", bOn);
-
-  aFlag.style.display = aOn ? "block" : "none";
-  bFlag.style.display = bOn ? "block" : "none";
-}
-
-/* UI (UNCHANGED except PP hook) */
+/* UI */
 function updateUI(){
 
   document.getElementById('teamAName').textContent = state.teamAName;
@@ -351,15 +415,63 @@ function updateUI(){
   document.getElementById('teamALogo').src = state.teamALogo || "";
   document.getElementById('teamBLogo').src = state.teamBLogo || "";
 
-  renderPP();
+  /* PP LOGIC ONLY (SAFE ADDITION) */
+  const aPP = String(state.teamA_pp).toLowerCase() === "true" || state.teamA_pp == 1;
+  const bPP = String(state.teamB_pp).toLowerCase() === "true" || state.teamB_pp == 1;
+
+  document.getElementById("teamAPP").style.display = aPP ? "block" : "none";
+  document.getElementById("teamBPP").style.display = bPP ? "block" : "none";
+
+  document.getElementById("teamAWrap").classList.toggle("pp-active", aPP);
+  document.getElementById("teamBWrap").classList.toggle("pp-active", bPP);
 }
 
-/* INIT ONLY */
+/* KEEP EVERYTHING ELSE UNCHANGED BELOW THIS LINE */
+
+/* TIMER */
+function toggleClock(){
+  state.Running = !state.Running;
+  if(state.Running){
+    startTimer();
+  } else {
+    stopTimer();
+  }
+  updateUI();
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    if(state.TimerSeconds > 0){
+      state.TimerSeconds--;
+      document.getElementById('timer').textContent =
+        Math.floor(state.TimerSeconds/60)+":"+String(state.TimerSeconds%60).padStart(2,'0');
+    }
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+}
+
+/* SCORE */
+function updateScore(team,change){
+  const key = team==="A" ? "teamAScore" : "teamBScore";
+  state[key] = Math.max(0,state[key]+change);
+  updateUI();
+}
+
+function updateShots(team,change){
+  const key = team==="A" ? "teamAShots" : "teamBShots";
+  state[key] = Math.max(0,state[key]+change);
+  updateUI();
+}
+
+/* INIT */
 async function init(){
-  try {
+  try{
     const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-    const data = await res.json();
-    Object.assign(state, data);
+    Object.assign(state, await res.json());
   } catch(e){
     console.error(e);
   }
